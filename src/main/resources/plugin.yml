@@ -1,0 +1,19 @@
+name: milkAdmin
+main: com.sectorgamer.sharkiller.milkAdmin.MilkAdmin
+author: Sharkiller Werri
+version: 2.1
+website: http://www.sectorgamer.com/comunidad/
+description: WebAdministrator of Minecraft Servers for Bukkit.
+
+softdepend: [Vault]
+
+commands:
+  milkadmin:
+    description: milkAdmin commands.
+    usage: /<command> help
+    aliases: [ma]
+    
+permissions:
+  milkadmin.whitelist:
+    description: Manage whitelist commands
+    default: op
