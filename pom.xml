@@ -74,6 +74,14 @@
           <include>milkAdmin.zip</include>
         </includes>
       </resource>
+      <resource>
+        <targetPath>.</targetPath>
+        <directory>${project.basedir}/src/main/resources/</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>milkAdmin_backup.zip</include>
+        </includes>
+      </resource>
     </resources>
         
     <plugins>
