@@ -79,11 +79,11 @@ public class WebServer extends Thread implements RTKListener {
     public WebServer() {
         /*File file = new File("white-list.txt");
         if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException ex) {
-                Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        try {
+        file.createNewFile();
+        } catch (IOException ex) {
+        Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
         }*/
         rootSocket = null;
         BackupPath = "Backups [milkAdmin]";
@@ -474,29 +474,29 @@ public class WebServer extends Thread implements RTKListener {
         /*String line;
         BufferedReader fin;
         List<String> players = new ArrayList<String>();
-
+        
         try {
-            fin = new BufferedReader(new FileReader("white-list.txt"));
+        fin = new BufferedReader(new FileReader("white-list.txt"));
         } catch (FileNotFoundException e) {
-            debug("ERROR in loadWhitelist(): " + e.getMessage());
-            return new ArrayList<String>();
+        debug("ERROR in loadWhitelist(): " + e.getMessage());
+        return new ArrayList<String>();
         }
         try {
-            while ((line = fin.readLine()) != null) {
-                if (!line.equals("")) {
-                    players.add(line.trim());
-                }
-            }
-
+        while ((line = fin.readLine()) != null) {
+        if (!line.equals("")) {
+        players.add(line.trim());
+        }
+        }
+        
         } catch (Exception e) {
-            debug("ERROR in loadWhitelist(): " + e.getMessage());
-            return new ArrayList<String>();
+        debug("ERROR in loadWhitelist(): " + e.getMessage());
+        return new ArrayList<String>();
         } finally {
-            try {
-                fin.close();
-            } catch (IOException e) {
-                debug("ERROR in loadWhitelist(): " + e.getMessage());
-            }
+        try {
+        fin.close();
+        } catch (IOException e) {
+        debug("ERROR in loadWhitelist(): " + e.getMessage());
+        }
         }
         return players;*/
         milkAdminInstance.WL.update();
@@ -506,18 +506,18 @@ public class WebServer extends Thread implements RTKListener {
     public boolean saveWhitelist(List<String> players) {
         /*final String newLine = System.getProperty("line.separator");
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("white-list.txt"));
-            for (String player : players) {
-                writer.write(player + newLine);
-            }
-            writer.flush();
-            writer.close();
-            return true;
+        BufferedWriter writer = new BufferedWriter(new FileWriter("white-list.txt"));
+        for (String player : players) {
+        writer.write(player + newLine);
+        }
+        writer.flush();
+        writer.close();
+        return true;
         } catch (Exception e) {
-            debug("ERROR in saveWhitelist(): " + e.getMessage());
-            return false;
+        debug("ERROR in saveWhitelist(): " + e.getMessage());
+        return false;
         }*/
-        this.milkAdminInstance.WL.updateLists(players,true);
+        this.milkAdminInstance.WL.updateLists(players, true);
         return true;
     }
 
@@ -526,12 +526,12 @@ public class WebServer extends Thread implements RTKListener {
         this.milkAdminInstance.WL.myAddDefaultPlayer(user);
         /*File file = new File("white-list.txt");
         try {
-            FileWriter writer = new FileWriter(file, true);
-            writer.write(user + System.getProperty("line.separator"));
-            writer.flush();
-            writer.close();
+        FileWriter writer = new FileWriter(file, true);
+        writer.write(user + System.getProperty("line.separator"));
+        writer.flush();
+        writer.close();
         } catch (IOException e) {
-            debug("ERROR in saveWhitelist(): " + e.getMessage());
+        debug("ERROR in saveWhitelist(): " + e.getMessage());
         }*/
     }
 
@@ -1013,160 +1013,183 @@ public class WebServer extends Thread implements RTKListener {
                                         print(json, "text/plain");
 
                                     } else if (url.startsWith("/server/reload_plugin")) {
-                                        String plugin = getParam("plugin", param);
-                                        if (plugin.length() > 0) {
-                                            if (milkAdminInstance.getServer().getPluginManager().isPluginEnabled(plugin)) {
-                                                milkAdminInstance.getServer().getPluginManager().disablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
-                                                milkAdminInstance.getServer().getPluginManager().enablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
-                                                json = "ok:pluginreloaded:_NAME_," + plugin;
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String plugin = getParam("plugin", param);
+                                            if (plugin.length() > 0) {
+                                                if (milkAdminInstance.getServer().getPluginManager().isPluginEnabled(plugin)) {
+                                                    milkAdminInstance.getServer().getPluginManager().disablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
+                                                    milkAdminInstance.getServer().getPluginManager().enablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
+                                                    json = "ok:pluginreloaded:_NAME_," + plugin;
+                                                } else {
+                                                    json = "ok:pluginnotenabled";
+                                                }
                                             } else {
-                                                json = "ok:pluginnotenabled";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/server/load_plugin")) {
-                                        String plugin = getParam("plugin", param);
-                                        if (plugin.length() > 0) {
-                                            File pluginFile = new File(new File("plugins"), plugin + ".jar");
-                                            if (pluginFile.isFile()) {
-                                                try {
-                                                    Plugin newPlugin = milkAdminInstance.getServer().getPluginManager().loadPlugin(pluginFile);
-                                                    if (newPlugin != null) {
-                                                        String pluginName = newPlugin.getDescription().getName();
-                                                        milkAdminInstance.getServer().getPluginManager().enablePlugin(newPlugin);
-                                                        if (newPlugin.isEnabled()) {
-                                                            MilkAdminLog.info("Plugin loaded and enabled [" + pluginName + "]");
-                                                            json = "ok:pluginloaded:_NAME_," + pluginName;
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String plugin = getParam("plugin", param);
+                                            if (plugin.length() > 0) {
+                                                File pluginFile = new File(new File("plugins"), plugin + ".jar");
+                                                if (pluginFile.isFile()) {
+                                                    try {
+                                                        Plugin newPlugin = milkAdminInstance.getServer().getPluginManager().loadPlugin(pluginFile);
+                                                        if (newPlugin != null) {
+                                                            String pluginName = newPlugin.getDescription().getName();
+                                                            milkAdminInstance.getServer().getPluginManager().enablePlugin(newPlugin);
+                                                            if (newPlugin.isEnabled()) {
+                                                                MilkAdminLog.info("Plugin loaded and enabled [" + pluginName + "]");
+                                                                json = "ok:pluginloaded:_NAME_," + pluginName;
+                                                            } else {
+                                                                json = "error:pluginloadfailed";
+                                                            }
                                                         } else {
                                                             json = "error:pluginloadfailed";
                                                         }
-                                                    } else {
-                                                        json = "error:pluginloadfailed";
+                                                    } catch (UnknownDependencyException ex) {
+                                                        json = "error:pluginnotplugin";
+                                                    } catch (InvalidPluginException ex) {
+                                                        json = "error:pluginnotplugin";
+                                                    } catch (InvalidDescriptionException ex) {
+                                                        json = "error:plugininvalid";
                                                     }
-                                                } catch (UnknownDependencyException ex) {
-                                                    json = "error:pluginnotplugin";
-                                                } catch (InvalidPluginException ex) {
-                                                    json = "error:pluginnotplugin";
-                                                } catch (InvalidDescriptionException ex) {
-                                                    json = "error:plugininvalid";
+                                                } else {
+                                                    json = "error:pluginnotexist";
                                                 }
                                             } else {
-                                                json = "error:pluginnotexist";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.equals("/server/console")) {
                                         print(readConsole(), "text/plain");
 
                                     } else if (url.startsWith("/server/properties_edit")) {
-                                        String property = getParam("property", param);
-                                        String value = getParam("value", param);
-                                        if (property.length() > 0 && value.length() > 0) {
-                                            BukkitProperties.setString(property, value);
-                                            json = "ok:editedproperty";
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String property = getParam("property", param);
+                                            String value = getParam("value", param);
+                                            if (property.length() > 0 && value.length() > 0) {
+                                                BukkitProperties.setString(property, value);
+                                                json = "ok:editedproperty";
+                                            } else {
+                                                json = "error:badparameters";
+                                            }
 
-                                        print(json, "text/plain");
+                                            print(json, "text/plain");
+                                        }
 
                                     } else if (url.startsWith("/page/change_lang")) {
-                                        String lang = getParam("lang", param);
-                                        if (lang.length() > 0) {
-                                            if (new File(htmlDir + "/js/lang/" + lang, "default.js").exists()) {
-                                                File src = new File(htmlDir + "/js/lang/" + lang, "default.js");
-                                                File dest = new File(htmlDir + "/js/lang", "default.js");
-                                                copyFolder(src, dest);
-                                                json = "ok:langchanged";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String lang = getParam("lang", param);
+                                            if (lang.length() > 0) {
+                                                if (new File(htmlDir + "/js/lang/" + lang, "default.js").exists()) {
+                                                    File src = new File(htmlDir + "/js/lang/" + lang, "default.js");
+                                                    File dest = new File(htmlDir + "/js/lang", "default.js");
+                                                    copyFolder(src, dest);
+                                                    json = "ok:langchanged";
+                                                } else {
+                                                    json = "error:langnotfound";
+                                                }
                                             } else {
-                                                json = "error:langnotfound";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
 
-                                        print(json, "text/plain");
+                                            print(json, "text/plain");
+                                        }
 
                                     } else if (url.equals("/backup")) {
-                                        Worlds.load();
-                                        //Worlds.setHeader("# milkAdmin - INTERNAL USE DO NOT MODIFY");
-                                        List<World> worlds = milkAdminInstance.getServer().getWorlds();
-                                        List<String> wstr = new ArrayList<String>();
-                                        if (worlds.size() > 0) {
-                                            for (World world : worlds) {
-                                                wstr.add(world.getName());
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            Worlds.load();
+                                            //Worlds.setHeader("# milkAdmin - INTERNAL USE DO NOT MODIFY");
+                                            List<World> worlds = milkAdminInstance.getServer().getWorlds();
+                                            List<String> wstr = new ArrayList<String>();
+                                            if (worlds.size() > 0) {
+                                                for (World world : worlds) {
+                                                    wstr.add(world.getName());
+                                                }
                                             }
-                                        }
-                                        Worlds.setProperty("Worlds", wstr);
-                                        Worlds.save();
-                                        json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
-                                        json += "<head><script type=\"text/javascript\">tourl = '/backup';</script>" + readFileAsString(htmlDir + "/wait.html");
-                                        print(json, "text/html");
-
-                                        try {
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            debug("ERROR in backup: " + e.getMessage());
-                                        }
-                                        milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
-
-                                    } else if (url.startsWith("/restore")) {
-                                        String id = getParam("id", param);
-                                        String clear = getParam("clear", param);
-                                        if (id.length() > 0) {
+                                            Worlds.setProperty("Worlds", wstr);
+                                            Worlds.save();
                                             json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
-                                            json += "<head><script type=\"text/javascript\">tourl = '/restore?id=" + id + "&clear=" + clear + "';</script>" + readFileAsString(htmlDir + "/wait.html");
+                                            json += "<head><script type=\"text/javascript\">tourl = '/backup';</script>" + readFileAsString(htmlDir + "/wait.html");
                                             print(json, "text/html");
 
-                                        } else {
-                                            readFileAsBinary(htmlDir + "/index.html", "text/html");
 
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (InterruptedException e) {
+                                                debug("ERROR in backup: " + e.getMessage());
+                                            }
+                                            milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
                                         }
-                                        try {
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            debug("ERROR in backup: " + e.getMessage());
-                                        }
-                                        milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
+                                    } else if (url.startsWith("/restore")) {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String id = getParam("id", param);
+                                            String clear = getParam("clear", param);
+                                            if (id.length() > 0) {
+                                                json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
+                                                json += "<head><script type=\"text/javascript\">tourl = '/restore?id=" + id + "&clear=" + clear + "';</script>" + readFileAsString(htmlDir + "/wait.html");
+                                                print(json, "text/html");
 
+                                            } else {
+                                                readFileAsBinary(htmlDir + "/index.html", "text/html");
+
+                                            }
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (InterruptedException e) {
+                                                debug("ERROR in backup: " + e.getMessage());
+                                            }
+                                            milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
+                                        }
                                     } else if (url.startsWith("/delete")) {
-                                        String id = getParam("id", param);
-                                        if (id.length() > 0) {
-                                            deleteDirectory(new File(BackupPath + "/" + id));
-                                            json = "ok:deletebackup";
-                                        } else {
-                                            json = "error:badparameters";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String id = getParam("id", param);
+                                            if (id.length() > 0) {
+                                                deleteDirectory(new File(BackupPath + "/" + id));
+                                                json = "ok:deletebackup";
+                                            } else {
+                                                json = "error:badparameters";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.equals("/info/list_backups.json")) {
-                                        File dir = new File(BackupPath);
-                                        String[] children = dir.list();
-                                        String listbu = "[";
-                                        if (children == null) {
-                                            listbu = "[]";
-                                        } else {
-                                            listbu = "[";
-                                            int i = 0;
-                                            while (i < (children.length)) {
-                                                String filename = children[i];
-                                                String filenamed = filename;
-                                                String filenamechanged = filenamed.replace(".", "/").replace("_", " ").replace("-", ":");
-                                                listbu = listbu + ("{\"optionValue\":\"" + filename + "\", \"optionDisplay\":\"" + filenamechanged + "\"}");
-                                                if (i < (children.length) - 1) {
-                                                    listbu = listbu + (",");
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            File dir = new File(BackupPath);
+                                            String[] children = dir.list();
+                                            String listbu = "[";
+                                            if (children == null) {
+                                                listbu = "[]";
+                                            } else {
+                                                listbu = "[";
+                                                int i = 0;
+                                                while (i < (children.length)) {
+                                                    String filename = children[i];
+                                                    String filenamed = filename;
+                                                    String filenamechanged = filenamed.replace(".", "/").replace("_", " ").replace("-", ":");
+                                                    listbu = listbu + ("{\"optionValue\":\"" + filename + "\", \"optionDisplay\":\"" + filenamechanged + "\"}");
+                                                    if (i < (children.length) - 1) {
+                                                        listbu = listbu + (",");
+                                                    }
+                                                    i++;
                                                 }
-                                                i++;
+                                                listbu = listbu + ("]");
                                             }
-                                            listbu = listbu + ("]");
+                                            print(listbu, "application/json");
                                         }
-                                        print(listbu, "application/json");
                                     } /////////////
                                     //INFO AREA
                                     /////////////
@@ -1187,64 +1210,78 @@ public class WebServer extends Thread implements RTKListener {
                                     wl+= "]";
                                     print(wl, "application/json");
                                     }*/ else if (url.equals("/customwl/add.php")) {
-                                        String user = getParam("user", param);
-                                        if (user.length() > 0) {
-                                            json = milkAdminInstance.WL.myAddDefaultPlayer(user);
-                                        } else {
-                                            json = "Invalid User";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String user = getParam("user", param);
+                                            if (user.length() > 0) {
+                                                json = milkAdminInstance.WL.myAddDefaultPlayer(user);
+                                            } else {
+                                                json = "Invalid User";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.equals("/customwl/remove.php")) {
-                                        String user = getParam("user", param);
-                                        if (user.length() > 0) {
-                                            json = milkAdminInstance.WL.myRemovePlayer(user);
-                                        } else {
-                                            json = "Invalid User";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String user = getParam("user", param);
+                                            if (user.length() > 0) {
+                                                json = milkAdminInstance.WL.myRemovePlayer(user);
+                                            } else {
+                                                json = "Invalid User";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } //////////////////
                                     //WHITELIST AREA
                                     //////////////////
                                     else if (url.equals("/whitelist/get.json")) {
-                                        List<String> players = loadWhitelist();
-                                        String wl = "[";
-                                        for (String p : players) {
-                                            if (wl.length() > 1) {
-                                                wl += ",";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            List<String> players = loadWhitelist();
+                                            String wl = "[";
+                                            for (String p : players) {
+                                                if (wl.length() > 1) {
+                                                    wl += ",";
+                                                }
+                                                wl += "\"" + p + "\"";
                                             }
-                                            wl += "\"" + p + "\"";
+                                            wl += "]";
+                                            print(wl, "application/json");
                                         }
-                                        wl += "]";
-                                        print(wl, "application/json");
-
                                     } else if (url.equals("/whitelist/add")) {
-                                        String user = getParam("myuser", param);
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String user = getParam("myuser", param);
 
-                                        if (user.length() > 0) {
-                                            addToWhitelist(user);
-                                            json = "ok";
-                                        } else {
-                                            json = "error";
+                                            if (user.length() > 0) {
+                                                addToWhitelist(user);
+                                                json = "ok";
+                                            } else {
+                                                json = "error";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.equals("/whitelist/save")) {
-                                        String usersP = getParam("users", param);
-                                        List<String> usersL = new ArrayList<String>();
-                                        if (usersP.length() > 0) {
-                                            String[] users = usersP.split(",");
-                                            for (String user : users) {
-                                                usersL.add(user);
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String usersP = getParam("users", param);
+                                            List<String> usersL = new ArrayList<String>();
+                                            if (usersP.length() > 0) {
+                                                String[] users = usersP.split(",");
+                                                for (String user : users) {
+                                                    usersL.add(user);
+                                                }
                                             }
+                                            if (saveWhitelist(usersL)) {
+                                                json = "ok";
+                                            } else {
+                                                json = "error";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        if (saveWhitelist(usersL)) {
-                                            json = "ok";
-                                        } else {
-                                            json = "error";
-                                        }
-                                        print(json, "text/plain");
 
                                     } ////////////////
                                     //PLAYER AREA
@@ -1349,83 +1386,98 @@ public class WebServer extends Thread implements RTKListener {
                                         print(json, "text/plain");
 
                                     } else if (url.startsWith("/player/ban_player")) {
-                                        String user = getParam("user", param);
-                                        String cause = getParam("cause", param);
-                                        if (user.length() > 0) {
-                                            String banstring = BannedString;
-                                            if (cause.length() > 0) {
-                                                banstring = cause;
-                                            }
-                                            user = milkAdminInstance.BL.getPlayerName(user);
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                milkAdminInstance.BL.banListName.setString(p.getName(), banstring);
-                                                p.kickPlayer(banstring);
-                                                MilkAdminLog.info(p.getName() + " banned for: " + banstring);
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String user = getParam("user", param);
+                                            String cause = getParam("cause", param);
+                                            if (user.length() > 0) {
+                                                String banstring = BannedString;
+                                                if (cause.length() > 0) {
+                                                    banstring = cause;
+                                                }
+                                                user = milkAdminInstance.BL.getPlayerName(user);
+                                                Player p = WPlayerInterface.getOnlinePlayerOld(user);
+                                                if (p != null && p.isOnline()) {
+                                                    milkAdminInstance.BL.banListName.setString(p.getName(), banstring);
+                                                    p.kickPlayer(banstring);
+                                                    MilkAdminLog.info(p.getName() + " banned for: " + banstring);
+                                                } else {
+                                                    milkAdminInstance.BL.banListName.setString(user, banstring);
+                                                }
+                                                json = "ok:playerbanned:_NAME_," + user;
                                             } else {
-                                                milkAdminInstance.BL.banListName.setString(user, banstring);
+                                                json = "error:badparameters";
                                             }
-                                            json = "ok:playerbanned:_NAME_," + user;
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/player/ban_ip")) {
-                                        String ip = getParam("ip", param);
-                                        String cause = getParam("cause", param);
-                                        if (ip.length() > 0) {
-                                            String banstring = BannedString;
-                                            if (cause.length() > 0) {
-                                                banstring = cause;
-                                            }
-                                            ip = milkAdminInstance.BL.getPlayerName(ip);
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(ip);
-                                            if (p != null && p.isOnline()) {
-                                                milkAdminInstance.BL.banListIp.setString(String.valueOf(p.getAddress()).split("/")[1].split(":")[0], banstring);
-                                                p.kickPlayer(banstring);
-                                                MilkAdminLog.info(p.getName() + " banned for: " + banstring);
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String ip = getParam("ip", param);
+                                            String cause = getParam("cause", param);
+                                            if (ip.length() > 0) {
+                                                String banstring = BannedString;
+                                                if (cause.length() > 0) {
+                                                    banstring = cause;
+                                                }
+                                                ip = milkAdminInstance.BL.getPlayerName(ip);
+                                                Player p = WPlayerInterface.getOnlinePlayerOld(ip);
+                                                if (p != null && p.isOnline()) {
+                                                    milkAdminInstance.BL.banListIp.setString(String.valueOf(p.getAddress()).split("/")[1].split(":")[0], banstring);
+                                                    p.kickPlayer(banstring);
+                                                    MilkAdminLog.info(p.getName() + " banned for: " + banstring);
+                                                } else {
+                                                    milkAdminInstance.BL.banListIp.setString(ip, banstring);
+                                                }
+                                                json = "ok:ipbanned:_IP_," + ip;
                                             } else {
-                                                milkAdminInstance.BL.banListIp.setString(ip, banstring);
+                                                json = "error:badparameters";
                                             }
-                                            json = "ok:ipbanned:_IP_," + ip;
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/player/unban_player")) {
-                                        String user = getParam("user", param);
-                                        user = milkAdminInstance.BL.getPlayerName(user);
-                                        if (user.length() > 0) {
-                                            if (milkAdminInstance.BL.banListName.keyExists(user)) {
-                                                milkAdminInstance.BL.banListName.removeKey(user);
-                                                json = "ok:playerunbanned:_NAME_," + user;
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String user = getParam("user", param);
+                                            user = milkAdminInstance.BL.getPlayerName(user);
+                                            if (user.length() > 0) {
+                                                if (milkAdminInstance.BL.banListName.keyExists(user)) {
+                                                    milkAdminInstance.BL.banListName.removeKey(user);
+                                                    json = "ok:playerunbanned:_NAME_," + user;
+                                                } else {
+                                                    json = "error:playernotbanned";
+                                                }
                                             } else {
-                                                json = "error:playernotbanned";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/player/unban_ip")) {
-                                        String ip = getParam("user", param);
-                                        ip = milkAdminInstance.BL.getPlayerName(ip);
-                                        if (ip.length() > 0) {
-                                            if (milkAdminInstance.BL.banListIp.keyExists(ip)) {
-                                                milkAdminInstance.BL.banListIp.removeKey(ip);
-                                                json = "ok:ipunbanned:_IP_," + ip;
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String ip = getParam("user", param);
+                                            ip = milkAdminInstance.BL.getPlayerName(ip);
+                                            if (ip.length() > 0) {
+                                                if (milkAdminInstance.BL.banListIp.keyExists(ip)) {
+                                                    milkAdminInstance.BL.banListIp.removeKey(ip);
+                                                    json = "ok:ipunbanned:_IP_," + ip;
+                                                } else {
+                                                    json = "error:ipnotbanned";
+                                                }
                                             } else {
-                                                json = "error:ipnotbanned";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.equals("/player/banlist.json")) {
-                                        listBans();
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            listBans();
+                                        }
                                     } else if (url.startsWith("/player/shoot_arrow")) {
                                         String user = getParam("user", param);
                                         int amount = Integer.parseInt(getParam("amount", param));
