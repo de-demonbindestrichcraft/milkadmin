@@ -69,6 +69,7 @@ public class Whitelist {
     private Map<String, String> whitelistMapUuid_Name = new ConcurrentHashMap<String, String>();
     private List<String> whitelistPlayers = new CopyOnWriteArrayList<String>();
     private boolean removeoperation = false;
+
     public Whitelist(MilkAdmin i) throws FileNotFoundException {
         this.plugin = i;
         //file = new File(plugin.WLDir + File.separator + "whitelist.json");
@@ -106,10 +107,10 @@ public class Whitelist {
     }
 
     public String myRemovePlayer(String player) {
-        this.removeoperation=true;
+        this.removeoperation = true;
         String name = getPlayerName(player);
         this.removeUserWC(name);
-        this.removeoperation=false;
+        this.removeoperation = false;
         return removePlayer(name);
     }
 
@@ -350,14 +351,11 @@ public class Whitelist {
     }
 
     public void removeAllWhiteListedPlayers() {
-        this.removeoperation=true;
         List<String> players = getPlayers();
-        for(String player:players)
-        {
+        for (String player : players) {
             myRemovePlayer(player);
         }
         this.whitelist.save();
-        this.removeoperation=false;
     }
 
     private String getPlayerName(String name) {
@@ -405,28 +403,22 @@ public class Whitelist {
     }
 
     public void update() {
-        if(!removeoperation)
-        {
-        this.whiteListedPlayers();
-        this.whitelistedPlayersList();
-        List<String> whitelistedPlayersList = this.getWhitelistedPlayersList();
-        List<String> players = getPlayers();
-        this.clear();
-        this.update(whitelistedPlayersList, players);
-        this.whiteListedPlayers();
-        this.whitelistedPlayersList();
-        }
+            this.whiteListedPlayers();
+            this.whitelistedPlayersList();
+            List<String> whitelistedPlayersList = this.getWhitelistedPlayersList();
+            List<String> players = getPlayers();
+            this.clear();
+            this.update(whitelistedPlayersList, players);
+            this.whiteListedPlayers();
+            this.whitelistedPlayersList();
     }
 
     public List<String> getWhitelistedPlayersList() {
-        List<String> list = new CopyOnWriteArrayList<String>();
-        list.addAll(whitelistPlayers);
-        return list;
+        return whitelistPlayers;
     }
 
     public void updateLists(List<String> players, boolean allPlayers) {
-        if(!removeoperation)
-        whitelistPlayersList(players, allPlayers);
+            whitelistPlayersList(players, allPlayers);
     }
 
     public void addUserMap(String name) {

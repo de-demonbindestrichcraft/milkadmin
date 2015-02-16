@@ -70,6 +70,7 @@ public class WebServer extends Thread implements RTKListener {
     private static final boolean updateUserPasswordFile = true;
     private static final boolean updateUserTimestampFile = true;
     private static List<String> bannedUpdatedRequests = new LinkedList<String>();
+    private milkAdminUpdateThread milkAdminUpdateThreadC;
 
     /**
      * Create the socket and listens for a connection.
@@ -104,6 +105,7 @@ public class WebServer extends Thread implements RTKListener {
         this();
         WebServerMode = 0;
         milkAdminInstance = i;
+        milkAdminUpdateThreadC = new milkAdminUpdateThread(i);
         start();
     }
 
@@ -117,6 +119,7 @@ public class WebServer extends Thread implements RTKListener {
         this();
         WebServerMode = 1;
         milkAdminInstance = i;
+        milkAdminUpdateThreadC = new milkAdminUpdateThread(i);
         WebServerSocket = s;
         start();
     }
@@ -499,8 +502,12 @@ public class WebServer extends Thread implements RTKListener {
         }
         }
         return players;*/
-        milkAdminInstance.WL.update();
-        return milkAdminInstance.WL.getWhitelistedPlayersList();
+        if(milkAdminUpdateThreadC==null)
+        {
+             milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+        }
+        milkAdminUpdateThreadC.update();
+        return milkAdminUpdateThreadC.getWhiteListedPlayersAsList();
     }
 
     public boolean saveWhitelist(List<String> players) {
@@ -517,13 +524,21 @@ public class WebServer extends Thread implements RTKListener {
         debug("ERROR in saveWhitelist(): " + e.getMessage());
         return false;
         }*/
-        this.milkAdminInstance.WL.updateLists(players, true);
+        if(milkAdminUpdateThreadC==null)
+        {
+            milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+        }
+        milkAdminUpdateThreadC.updateLists(players);
         return true;
     }
 
     public void addToWhitelist(String user) {
         //user=milkAdminInstance.BL.getPlayerName(user);
-        this.milkAdminInstance.WL.myAddDefaultPlayer(user);
+        if(milkAdminUpdateThreadC==null)
+        {
+            milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+        }
+        this.milkAdminUpdateThreadC.myAddDefaultPlayer(user);
         /*File file = new File("white-list.txt");
         try {
         FileWriter writer = new FileWriter(file, true);
