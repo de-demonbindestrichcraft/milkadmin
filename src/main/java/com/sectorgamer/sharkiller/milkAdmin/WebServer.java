@@ -1,6 +1,7 @@
 package com.sectorgamer.sharkiller.milkAdmin;
 
 import com.evilmidget38.UUIDFetcher;
+import com.sectorgamer.sharkiller.milkAdmin.MilkAdmin;
 import java.net.*;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
@@ -379,7 +380,7 @@ public class WebServer extends Thread implements RTKListener {
                     whitelist = true;
                 } else {
                     this.useCustomWhitelist = false;
-                    whitelist=false;
+                    whitelist = false;
                 }
             }
         } else {
@@ -411,7 +412,10 @@ public class WebServer extends Thread implements RTKListener {
         String totalspace = "1";
         String usedspace = "0";
         try {
-            String version = milkAdminInstance.getServer().getVersion();
+            String version = "";
+            if (milkAdminInstance != null) {
+                version = milkAdminInstance.getServer().getVersion();
+            }
             Matcher result = Pattern.compile("b([0-9]+)jnks").matcher(version);
             result.find();
             try {
@@ -438,11 +442,18 @@ public class WebServer extends Thread implements RTKListener {
             }
 
             String users = "[]";
-            String amountusers = String.valueOf(WPlayerInterface.getOnlinePlayersOld().length);
-            if (WPlayerInterface.getOnlinePlayersOld().length > 0) {
+            Player[] onlinePlayersOld = WPlayerInterface.getOnlinePlayersOld();
+            if (onlinePlayersOld == null) {
+                onlinePlayersOld = new Player[]{};
+            }
+            String amountusers = String.valueOf(onlinePlayersOld.length);
+            if (onlinePlayersOld.length > 0) {
                 users = "[";
-                Player[] p = WPlayerInterface.getOnlinePlayersOld();
+                Player[] p = onlinePlayersOld;
                 for (int i = 0; i < p.length; i++) {
+                    if (p[i] == null) {
+                        continue;
+                    }
                     users = users + "\"" + p[i].getName() + "\"";
                     if (i < p.length - 1) {
                         users = users + ", ";
@@ -450,8 +461,23 @@ public class WebServer extends Thread implements RTKListener {
                 }
                 users = users + "]";
             }
-            boolean usingrtk = milkAdminInstance.UsingRTK;
-            data = "{\"lastrestart\":\"" + MilkAdmin.initTime + "\","
+            boolean usingrtk = false;
+            String initTime = "";
+            if (MilkAdmin.initTime != null) {
+                initTime = MilkAdmin.initTime;
+            }
+            if (milkAdminInstance != null) {
+                usingrtk = milkAdminInstance.UsingRTK;
+            } else {
+                usingrtk = false;
+            }
+            String infoProperties = "";
+            try {
+                infoProperties = infoProperties();
+            } catch (Exception ex) {
+                infoProperties = "";
+            }
+            data = "{\"lastrestart\":\"" + initTime + "\","
                     + "\"version\":\"" + version + "\","
                     + "\"build\":\"" + build + "\","
                     + "\"totmem\":\"" + totmem + "\","
@@ -464,7 +490,7 @@ public class WebServer extends Thread implements RTKListener {
                     + "\"amountusers\":\"" + amountusers + "\","
                     + "\"users\":" + users + ","
                     + "\"usingrtk\":" + usingrtk + ","
-                    + "\"properties\":" + infoProperties() + "}";
+                    + "\"properties\":" + infoProperties + "}";
         } catch (Exception e) {
             debug("ERROR in infoData(): " + e.getMessage());
         }
@@ -1119,14 +1145,16 @@ public class WebServer extends Thread implements RTKListener {
                                                     if (value.equalsIgnoreCase("true")) {
                                                         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist on");
                                                         if (milkAdminInstance != null) {
-                                                            if(useCustomWhitelist)
-                                                            milkAdminInstance.WLCustom = true;
+                                                            if (useCustomWhitelist) {
+                                                                milkAdminInstance.WLCustom = true;
+                                                            }
                                                             milkAdminInstance.MCWhitelist = true;
                                                         }
                                                     } else if (value.equalsIgnoreCase("false")) {
                                                         if (milkAdminInstance != null) {
-                                                            if(useCustomWhitelist)
-                                                            milkAdminInstance.WLCustom = false;
+                                                            if (useCustomWhitelist) {
+                                                                milkAdminInstance.WLCustom = false;
+                                                            }
                                                             milkAdminInstance.MCWhitelist = false;
                                                         }
                                                         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist off");
