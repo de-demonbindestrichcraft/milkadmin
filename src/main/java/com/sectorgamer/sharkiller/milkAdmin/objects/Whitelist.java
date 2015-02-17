@@ -15,6 +15,7 @@ import java.util.List;
 import com.sectorgamer.sharkiller.milkAdmin.MilkAdmin;
 import com.sectorgamer.sharkiller.milkAdmin.util.Configuration;
 import com.sectorgamer.sharkiller.milkAdmin.util.MilkAdminLog;
+import de.demonbindestrichcraft.lib.bukkit.wbukkitlib.common.files.Config;
 import de.demonbindestrichcraft.lib.bukkit.wbukkitlib.player.WPlayerInterface;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,20 +62,24 @@ public class Whitelist {
      **/
     private MilkAdmin plugin;
     private File file;
+    private File file2;
     private JsonParser json;
     //private JsonArray whitelist;
     private Configuration whitelist;
+     private Config white_list;
     private int size;
     private Map<String, String> whitelistMapName_Uuid = new ConcurrentHashMap<String, String>();
     private Map<String, String> whitelistMapUuid_Name = new ConcurrentHashMap<String, String>();
+    private Map<String, String> whitelistP = new ConcurrentHashMap<String, String>();
     private List<String> whitelistPlayers = new CopyOnWriteArrayList<String>();
-    private boolean removeoperation = false;
 
     public Whitelist(MilkAdmin i) throws FileNotFoundException {
         this.plugin = i;
         //file = new File(plugin.WLDir + File.separator + "whitelist.json");
         file = new File(plugin.WLDir + File.separator + "whitelist.txt");
+        file2 = new File(plugin.WLDir + File.separator + "white-list.txt");
         whitelist = new Configuration(file);
+        white_list = new Config(file2);
         /* JsonElement parse = json.parse(new JsonReader(new FileReader(file)));
         whitelist = parse.getAsJsonArray();
         size = whitelist.size();
@@ -87,19 +92,34 @@ public class Whitelist {
             whitelist.load();
         } else {
             whitelist.save();
-            List<String> players = new CopyOnWriteArrayList<String>(getPlayers());
-            this.update(players, players);
         }
-
+        
+         if (file2.exists()) {
+            white_list.load(file2, "=");
+            whitelistP=white_list.getCopyOfProperties();
+        } else {
+            try {
+                file2.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(Whitelist.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            whitelistP.put("notchistdoof", "true");
+            white_list.update(whitelistP);
+            white_list.save("=");
+         }
+      
         this.update();
     }
 
     public String removePlayer(String player) {
         String result;
-        if (keyExists(player)) {
-            whitelist.setProperty(player + ".enabled", false);
+        if (keyExists(player.toLowerCase())) {
+            whitelist.setProperty(player.toLowerCase() + ".enabled", false);
             whitelist.save();
             result = "Jugador eliminado de la whitelist";
+            whitelistP.remove(player);
+            white_list.update(whitelistP);
+            white_list.save("=");
         } else {
             result = "El jugador no existe";
         }
@@ -107,20 +127,21 @@ public class Whitelist {
     }
 
     public String myRemovePlayer(String player) {
-        this.removeoperation = true;
-        String name = getPlayerName(player);
-        this.removeUserWC(name);
-        this.removeoperation = false;
+        String name = getPlayerName(player).toLowerCase();
+        this.removeUserW(name);
         return removePlayer(name);
     }
 
     public String addDefaultPlayer(String player) {
         String result;
-        if (!keyExists(player)) {
+        if (!keyExists(player.toLowerCase())) {
             Date today = Calendar.getInstance().getTime();
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yy");
             String register = formatter.format(today);
-            result = setPlayer(player, true, null, null, register, null, null, null, null, null, null);
+            result = setPlayer(player.toLowerCase(), true, null, null, register, null, null, null, null, null, null);
+            whitelistP.put(player, "true");
+            white_list.update(whitelistP);
+            white_list.save("=");
         } else {
             result = "Player already exist and his account is " + (whitelist.getBoolean(player + ".enabled", false) ? "enabled" : "disabled");
         }
@@ -128,8 +149,8 @@ public class Whitelist {
     }
 
     public String myAddDefaultPlayer(String player) {
-        String name = getPlayerName(player);
-        this.addUserWC(name);
+        String name = getPlayerName(player).toLowerCase();
+        this.addUserW(name);
         return addDefaultPlayer(name);
     }
 
@@ -175,6 +196,7 @@ public class Whitelist {
     }
 
     public void updateLastLogin(String player) {
+        player=player.toLowerCase();
         Date today = Calendar.getInstance().getTime();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yy");
         String lastlogin = Calendar.getInstance().getTimeInMillis() + "," + formatter.format(today);
@@ -183,7 +205,8 @@ public class Whitelist {
     }
 
     private boolean keyExists(String key) {
-        if (whitelist.getKeys(key) != null) {
+        key=key.toLowerCase();
+        if (whitelistP.containsKey(key)) {
             return true;
         } else {
             return false;
@@ -191,9 +214,11 @@ public class Whitelist {
     }
 
     public boolean inWhitelist(String player) {
+        if(player!=null&&!player.isEmpty())
+           player=player.toLowerCase();
         reload();
         if (keyExists(player)) {
-            return whitelist.getBoolean(player + ".enabled", false);
+            return true;
         } else {
             return false;
         }
@@ -207,12 +232,19 @@ public class Whitelist {
     public void reload() {
         whitelist = new Configuration(file);
         whitelist.load();
+        white_list = new Config(file2);
+        white_list.load(file2, "=");
+        whitelistP=white_list.getCopyOfProperties();
     }
 
     public void myReload() {
         file.delete();
+        file2.delete();
         whitelist = new Configuration(file);
         whitelist.save();
+        white_list = new Config(file2);
+        white_list.load(file2, "=");
+        whitelistP=white_list.getCopyOfProperties();
         update();
     }
 
@@ -277,8 +309,9 @@ public class Whitelist {
         for (OfflinePlayer offlinePlayer : whitelistedPlayers) {
             if (offlinePlayer.isWhitelisted()) {
                 name = offlinePlayer.getName();
+                name = name.toLowerCase();
                 try {
-                    uuid = UUIDFetcher.getUUIDOf(name).toString();
+                    uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
                 } catch (Exception ex) {
                     uuid = "false";
                 }
@@ -295,9 +328,9 @@ public class Whitelist {
         whitelistMapUuid_Name.clear();
         String myname = "";
         for (String name : whitelistedPlayers) {
-            myname = getPlayerName(name);
+            myname = getPlayerName(name).toLowerCase();
             try {
-                uuid = UUIDFetcher.getUUIDOf(myname).toString();
+                uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(myname)).toString();
             } catch (Exception ex) {
                 uuid = "false";
             }
@@ -307,53 +340,24 @@ public class Whitelist {
         }
     }
 
-    private void whitelistPlayersList(List<String> whitelistedPlayers, boolean allPlayers) {
-        whiteListedPlayers();
-        whitelistedPlayersList();
-        List<String> currentPlayers = getWhitelistedPlayersList();
-        whiteListedPlayers(whitelistedPlayers);
-        whitelistedPlayersList();
-        List<String> whitelistedPlayersList = getWhitelistedPlayersList();
-        ConsoleCommandSender consoleSender = Bukkit.getServer().getConsoleSender();
-        Server server = Bukkit.getServer();
-        for (String name : currentPlayers) {
-            if (!whitelistedPlayersList.contains(name)) {
-                server.dispatchCommand(consoleSender, "whitelist remove " + name);
-                server.dispatchCommand(consoleSender, "kick " + name);
-                this.removePlayer(name);
-            }
-
-        }
+    private void whitelistPlayersList(List<String> whitelistedPlayers) {
+        List<String> whitelistedPlayersList = getWhitelist();
         for (String name : whitelistedPlayersList) {
-            server.dispatchCommand(consoleSender, "whitelist add " + name);
-            this.addDefaultPlayer(name);
+            name=name.toLowerCase();
+            if (!whitelistedPlayers.contains(name)) {
+                this.myRemovePlayer(name);
+            }
         }
-
-
-        if (allPlayers) {
-            List<String> players = getPlayers();
-            String myname = "";
-            for (String name : players) {
-                myname = getPlayerName(name);
-                if (!whitelistedPlayersList.contains(myname)) {
-                    server.dispatchCommand(consoleSender, "whitelist remove " + myname);
-                    server.dispatchCommand(consoleSender, "kick " + myname);
-                    this.removePlayer(myname);
-                }
-
-            }
-            for (String name : players) {
-                myname = getPlayerName(name);
-                server.dispatchCommand(consoleSender, "whitelist add " + myname);
-                this.addDefaultPlayer(myname);
-            }
+        for (String name : whitelistedPlayers) {
+            name=name.toLowerCase();
+            this.myAddDefaultPlayer(name);
         }
     }
 
     public void removeAllWhiteListedPlayers() {
         List<String> players = getPlayers();
         for (String player : players) {
-            myRemovePlayer(player);
+            myRemovePlayer(player.toLowerCase());
         }
         this.whitelist.save();
     }
@@ -363,9 +367,9 @@ public class Whitelist {
         String myname = null;
         UUID myuuid = null;
         try {
-            myuuid = UUIDFetcher.getUUIDOf(name);
+            myuuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name));
             uuid = myuuid.toString();
-            myname = name;
+            myname = name.toLowerCase();
         } catch (Throwable ex) {
             uuid = null;
             myuuid = null;
@@ -377,18 +381,18 @@ public class Whitelist {
                 OfflinePlayer offlinePlayer = Bukkit.getServer().getOfflinePlayer(myuuid);
                 if (!(offlinePlayer instanceof OfflinePlayer)) {
                     Player player = Bukkit.getServer().getPlayer(myuuid);
-                    myname = player.getName();
+                    myname = player.getName().toLowerCase();
 
                 } else {
-                    myname = offlinePlayer.getName();
+                    myname = offlinePlayer.getName().toLowerCase();
                 }
             } catch (Throwable ex) {
-                myname = name;
+                myname = name.toLowerCase();
                 return myname;
             }
-            return myname;
+            return myname.toLowerCase();
         } else {
-            myname = name;
+            myname = name.toLowerCase();
             return myname;
         }
 
@@ -398,34 +402,29 @@ public class Whitelist {
         HashSet<String> hashSet = new HashSet<String>(whitelistMapName_Uuid.keySet());
         whitelistPlayers.clear();
         for (String player : hashSet) {
-            whitelistPlayers.add(player);
+            whitelistPlayers.add(player.toLowerCase());
         }
     }
 
     public void update() {
-            this.whiteListedPlayers();
-            this.whitelistedPlayersList();
-            List<String> whitelistedPlayersList = this.getWhitelistedPlayersList();
-            List<String> players = getPlayers();
-            this.clear();
-            this.update(whitelistedPlayersList, players);
-            this.whiteListedPlayers();
-            this.whitelistedPlayersList();
+        List<String> whitelist1 = getWhitelist();
+        if(!whitelist1.isEmpty())
+        this.updateLists(whitelist1);
     }
 
     public List<String> getWhitelistedPlayersList() {
         return whitelistPlayers;
     }
 
-    public void updateLists(List<String> players, boolean allPlayers) {
-            whitelistPlayersList(players, allPlayers);
+    public void updateLists(List<String> players) {
+            whitelistPlayersList(players);
     }
 
     public void addUserMap(String name) {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -437,7 +436,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -459,7 +458,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -472,7 +471,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -484,7 +483,7 @@ public class Whitelist {
     public void addUserMapW(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -495,7 +494,7 @@ public class Whitelist {
     public void removeUserMapW(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -514,7 +513,7 @@ public class Whitelist {
     public void addUserW(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -526,7 +525,7 @@ public class Whitelist {
     public void removeUserW(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -539,7 +538,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -552,7 +551,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -577,7 +576,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -591,7 +590,7 @@ public class Whitelist {
         String playerName = this.getPlayerName(name);
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(playerName).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(playerName)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -604,7 +603,7 @@ public class Whitelist {
     public void addUserMapWC(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -616,7 +615,7 @@ public class Whitelist {
     public void removeUserMapWC(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -638,7 +637,7 @@ public class Whitelist {
     public void addUserWC(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -651,7 +650,7 @@ public class Whitelist {
     public void removeUserWC(String name) {
         String uuid = "false";
         try {
-            uuid = UUIDFetcher.getUUIDOf(name).toString();
+            uuid = UUIDFetcher.getUUIDOf(getOriginalPlayerName(name)).toString();
         } catch (Exception ex) {
             uuid = "false";
         }
@@ -663,13 +662,13 @@ public class Whitelist {
 
     public void addUserConsole(String name) {
         ConsoleCommandSender consoleSender = Bukkit.getServer().getConsoleSender();
-        Bukkit.getServer().dispatchCommand(consoleSender, "whitelist add " + name);
-        Bukkit.getServer().dispatchCommand(consoleSender, "kick " + name);
+        Bukkit.getServer().dispatchCommand(consoleSender, "whitelist add " + getOriginalPlayerName(name));
+        Bukkit.getServer().dispatchCommand(consoleSender, "kick " + getOriginalPlayerName(name));
     }
 
     public void removeUserConsole(String name) {
         ConsoleCommandSender consoleSender = Bukkit.getServer().getConsoleSender();
-        Bukkit.getServer().dispatchCommand(consoleSender, "whitelist remove " + name);
+        Bukkit.getServer().dispatchCommand(consoleSender, "whitelist remove " + getOriginalPlayerName(name));
     }
 
     public void update(List<String> whitelistedPlayers, List<String> players) {
@@ -678,10 +677,10 @@ public class Whitelist {
         List<String> myWhitelistedPlayers = new CopyOnWriteArrayList<String>();
         myWhitelistedPlayers.addAll(whitelistedPlayers);
         for (String name : myPlayers) {
-            if (!myWhitelistedPlayers.contains(name)) {
-                this.myRemovePlayer(name);
+            if (!myWhitelistedPlayers.contains(name.toLowerCase())) {
+                this.myRemovePlayer(name.toLowerCase());
             } else {
-                this.myAddDefaultPlayer(name);
+                this.myAddDefaultPlayer(name.toLowerCase());
             }
         }
     }
@@ -696,6 +695,8 @@ public class Whitelist {
         }
 
         Player[] players = WPlayerInterface.getOnlinePlayersOld();
+        if(players==null)
+            return list;
         for (Player player : players) {
             if (player != null && player.isOnline()) {
                 list.add(player.getName());
@@ -710,14 +711,44 @@ public class Whitelist {
         this.whitelistPlayers.clear();
     }
 
-    private List<String> getWhitelist() {
-        List<String> players = this.getPlayers();
+    public List<String> getWhitelist() {
+        if(whitelistP==null)
+        {
+            whitelistP=new ConcurrentHashMap<String, String>();
+        }
+        Set<String> keySet = whitelistP.keySet();
+        if(keySet==null)
+            return new CopyOnWriteArrayList<String>();
+   
         List<String> whitelistedPlayers = new CopyOnWriteArrayList<String>();
-        for (String name : players) {
-            if (this.inWhitelist(name)) {
-                whitelistedPlayers.add(name);
-            }
+        Set<String> d = new HashSet<String>();
+        d.addAll(keySet);
+        for (String name : d) {
+            if(name==null)
+                continue;
+            whitelistedPlayers.add(name);
         }
         return whitelistedPlayers;
+    }
+
+    public void addAllWhiteListedPlayers() {
+        List<String> players = this.getPlayers();
+        for(String player : players)
+        {
+            myAddDefaultPlayer(player.toLowerCase());
+        }
+    }
+    
+    public String getOriginalPlayerName(String name)
+    {
+        List<String> players = getPlayers();
+        for(String player : players)
+        {
+            if(name.equalsIgnoreCase(player))
+            {
+                return player;
+            }
+        }
+        return name;
     }
 }

@@ -12,6 +12,10 @@ commands:
     description: milkAdmin commands.
     usage: /<command> help
     aliases: [ma]
+  whitelist:
+    description: milkAdmin commands.
+    usage: /<command> help
+    aliases: [wl]
     
 permissions:
   milkadmin.whitelist:

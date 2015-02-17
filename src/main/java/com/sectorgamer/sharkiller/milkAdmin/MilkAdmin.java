@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
+import sun.nio.cs.ext.MacCentralEurope;
 
 public class MilkAdmin extends JavaPlugin implements RTKListener {
     /* Ban list variables */
@@ -64,6 +66,10 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
     public static Permission Permissions = null;
     private boolean permissionsEnabled = false;
     private WerrisRemoteToolkitConfig werrisRemoteToolkitConfig = null;
+    private milkAdminUpdateThread m = null;
+    private WhitelistCommandExecuter w;
+    PluginManager pm;
+    public boolean MCWhitelist;
 
     public boolean setup() {
         try {
@@ -119,6 +125,12 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             UsingRTK = Settings.getBoolean("RTK.UsingRTK");
             WLCustom = Settings.getBoolean("Whitelist.Custom", false);
             boolean MCWhitelist = ServerProperties.getBoolean("white-list", false);
+            if(WLCustom||MCWhitelist)
+            {
+                this.MCWhitelist=true;
+            } else {
+                this.MCWhitelist=false;
+            }
             OnlineMode = ServerProperties.getBoolean("online-mode", true);
 
             /* Setup permissions */
@@ -130,24 +142,17 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             }
 
             /* Init whitelist */
-            /*if (MCWhitelist && WLCustom) {
-            MilkAdminLog.warning("Minecraft Whitelist is actitivated. Shutting down custom Whitelist.");
-            WLCustom = false;
+            if (MCWhitelist && WLCustom) {
+                MilkAdminLog.warning("Minecraft Whitelist is actitivated. Shutting down custom Whitelist.");
+                WLCustom = false;
             } else if (WLCustom) {
-            WL = new Whitelist(this);
-            WLAlert = Settings.getBoolean("Whitelist.Alert", true);
-            WLAlertMessage = Settings.getString("Whitelist.AlertMessage", "&6%s trying to join but is not in whitelist.");
-            WLKickMessage = Settings.getString("Whitelist.KickMessage", "You are not in whitelist. Register on the forum!");
-            MilkAdminLog.info("Using Custom Whitelist (" + WL.count() + " users)");
-            }*/
-            if (MCWhitelist) {
-                WLCustom = true;
                 WL = new Whitelist(this);
                 WLAlert = Settings.getBoolean("Whitelist.Alert", true);
                 WLAlertMessage = Settings.getString("Whitelist.AlertMessage", "&6%s trying to join but is not in whitelist.");
                 WLKickMessage = Settings.getString("Whitelist.KickMessage", "You are not in whitelist. Register on the forum!");
                 MilkAdminLog.info("Using Custom Whitelist (" + WL.count() + " users)");
             }
+
             /* Init banlist */
             BL = new Banlist(this);
             MilkAdminLog.info("Banlist Files Loaded");
@@ -179,6 +184,9 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
         } catch (Exception e) {
             MilkAdminLog.severe("Something went wrong!", e);
             return false;
+        }
+        if (this != null) {
+            m = new milkAdminUpdateThread(this);
         }
         return true;
     }
@@ -252,6 +260,7 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
 
     @Override
     public void onEnable() {
+        pm=Bukkit.getPluginManager();
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         initTime = sdf.format(cal.getTime());
@@ -263,6 +272,8 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             pm.registerEvents(new BanlistListener(this), this);
             if (WLCustom) {
                 pm.registerEvents(new WhitelistListener(this), this);
+                w=new WhitelistCommandExecuter(this);
+                getCommand("whitelist").setExecutor(w);
             }
             //regenerateBackupLoggedIn();
             /* Welcome messages */
@@ -294,6 +305,8 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+        if(cmd==null)
+            return true;
         String commandName = cmd.getName();
 
         if (commandName.equalsIgnoreCase("milkadmin")) {
@@ -308,11 +321,27 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
                     this.BL.update();
                     sender.sendMessage("banlist is updated!");
                 } else if (args[0].equalsIgnoreCase("updatewhitelist")) {
-                    this.WL.update();
+                    if (m != null) {
+                        this.m.update();
+                    } else {
+                        this.WL.update();
+                    }
                     sender.sendMessage("whitelist is updated!");
                 } else if (args[0].equalsIgnoreCase("removeallwhitelist")) {
-                    this.WL.removeAllWhiteListedPlayers();
+                    if (m != null) {
+                        m.removeAllWhiteListedPlayers();
+                    } else {
+                        this.WL.removeAllWhiteListedPlayers();
+                    }
                     sender.sendMessage("All players removed from the whitelist!");
+                } else if (args[0].equalsIgnoreCase("addallwhitelist")) {
+                    if (m != null) {
+                        m.addAllWhiteListedPlayers();
+                    } else {
+                        this.WL.addAllWhiteListedPlayers();
+                        this.WL.update();
+                    }
+                    sender.sendMessage("All players added to the whitelist!");
                 } else if (args[0].equalsIgnoreCase("removeallbanlist")) {
                     this.BL.removeAllPlayersFromBanList();
                     sender.sendMessage("All players removed from the banlist!");
@@ -338,14 +367,26 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
                     }
                 } else if (args.length == 3) {
                     if (args[1].equalsIgnoreCase("add")) {
-                        String res = WL.myAddDefaultPlayer(args[2]);
+                        String res = null;
+                        if (m != null) {
+                            m.addWhiteListedPlayersAsList(args[2]);
+                            res = "ok";
+                        } else {
+                            res = WL.myAddDefaultPlayer(args[2]);
+                        }
                         if (res == "ok") {
                             sender.sendMessage(ChatColor.GOLD + "[milkAdmin] " + ChatColor.GREEN + args[2] + " fue agregado a la whitelist.");
                         } else {
                             sender.sendMessage(ChatColor.GOLD + "[milkAdmin] " + ChatColor.GREEN + res);
                         }
                     } else if (args[1].equalsIgnoreCase("remove")) {
-                        String res = WL.myRemovePlayer(args[2]);
+                        String res = null;
+                        if (m != null) {
+                            m.removeWhiteListedPlayersAsList(args[2]);
+                            res = "ok";
+                        } else {
+                            res = WL.myRemovePlayer(args[2]);
+                        }
                         if (res == "ok") {
                             sender.sendMessage(ChatColor.GOLD + "[milkAdmin] " + ChatColor.GREEN + args[2] + " fue sacado de la whitelist.");
                         } else {

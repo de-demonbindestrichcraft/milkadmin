@@ -1,5 +1,6 @@
 package com.sectorgamer.sharkiller.milkAdmin;
 
+import com.evilmidget38.UUIDFetcher;
 import java.net.*;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
@@ -24,6 +25,7 @@ import de.demonbindestrichcraft.lib.bukkit.wbukkitlib.player.WPlayerInterface;
 import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.files.GenerallyFileManager;
 import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.session.Session;
 import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.session.ThreadSafeSession;
+import java.util.concurrent.CopyOnWriteArrayList;
 import sun.awt.image.ImageWatched.WeakLink;
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
@@ -70,7 +72,8 @@ public class WebServer extends Thread implements RTKListener {
     private static final boolean updateUserPasswordFile = true;
     private static final boolean updateUserTimestampFile = true;
     private static List<String> bannedUpdatedRequests = new LinkedList<String>();
-    private milkAdminUpdateThread milkAdminUpdateThreadC;
+    private milkAdminUpdateThread milkAdminUpdateThreadC = null;
+    private boolean useCustomWhitelist = false;
 
     /**
      * Create the socket and listens for a connection.
@@ -99,13 +102,14 @@ public class WebServer extends Thread implements RTKListener {
         adminList = new NoSavePropertiesFile(PluginDir + "admins.ini");
         saveAdminList = new PropertiesFile(PluginDir + "admins.ini");
         LoggedIn = new PropertiesFile(PluginDir + "loggedin.ini");
+        milkAdminUpdateThreadC = null;
     }
 
     public WebServer(MilkAdmin i) {
         this();
         WebServerMode = 0;
         milkAdminInstance = i;
-        milkAdminUpdateThreadC = new milkAdminUpdateThread(i);
+        milkAdminUpdateThreadC = null;
         start();
     }
 
@@ -119,7 +123,7 @@ public class WebServer extends Thread implements RTKListener {
         this();
         WebServerMode = 1;
         milkAdminInstance = i;
-        milkAdminUpdateThreadC = new milkAdminUpdateThread(i);
+        milkAdminUpdateThreadC = null;
         WebServerSocket = s;
         start();
     }
@@ -368,6 +372,20 @@ public class WebServer extends Thread implements RTKListener {
         boolean pvp = BukkitProperties.getBoolean("pvp", false);
         boolean flight = BukkitProperties.getBoolean("allow-flight", false);
         boolean whitelist = BukkitProperties.getBoolean("white-list", false);
+        if (!whitelist) {
+            if (this.milkAdminInstance != null) {
+                if (this.milkAdminInstance.WLCustom) {
+                    this.useCustomWhitelist = true;
+                    whitelist = true;
+                } else {
+                    this.useCustomWhitelist = false;
+                    whitelist=false;
+                }
+            }
+        } else {
+            this.useCustomWhitelist = false;
+        }
+
 
         String json = "{\"ip\":\"" + ip + "\","
                 + "\"port\":\"" + port + "\","
@@ -502,12 +520,15 @@ public class WebServer extends Thread implements RTKListener {
         }
         }
         return players;*/
-        if(milkAdminUpdateThreadC==null)
-        {
-             milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+        if (milkAdminInstance != null) {
+            if (milkAdminUpdateThreadC == null) {
+                milkAdminUpdateThreadC = new milkAdminUpdateThread(milkAdminInstance);
+            }
+            milkAdminUpdateThreadC.update();
+            return milkAdminUpdateThreadC.getWhiteListedPlayersAsList();
+        } else {
+            return new CopyOnWriteArrayList<String>();
         }
-        milkAdminUpdateThreadC.update();
-        return milkAdminUpdateThreadC.getWhiteListedPlayersAsList();
     }
 
     public boolean saveWhitelist(List<String> players) {
@@ -524,21 +545,24 @@ public class WebServer extends Thread implements RTKListener {
         debug("ERROR in saveWhitelist(): " + e.getMessage());
         return false;
         }*/
-        if(milkAdminUpdateThreadC==null)
-        {
-            milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+
+        if (milkAdminInstance != null) {
+            if (milkAdminUpdateThreadC == null) {
+                milkAdminUpdateThreadC = new milkAdminUpdateThread(milkAdminInstance);
+            }
+            milkAdminUpdateThreadC.updateLists(players);
         }
-        milkAdminUpdateThreadC.updateLists(players);
         return true;
     }
 
     public void addToWhitelist(String user) {
         //user=milkAdminInstance.BL.getPlayerName(user);
-        if(milkAdminUpdateThreadC==null)
-        {
-            milkAdminUpdateThreadC=new milkAdminUpdateThread(milkAdminInstance);
+        if (milkAdminInstance != null) {
+            if (milkAdminUpdateThreadC == null) {
+                milkAdminUpdateThreadC = new milkAdminUpdateThread(milkAdminInstance);
+            }
+            milkAdminUpdateThreadC.myAddDefaultPlayer(user);
         }
-        this.milkAdminUpdateThreadC.myAddDefaultPlayer(user);
         /*File file = new File("white-list.txt");
         try {
         FileWriter writer = new FileWriter(file, true);
@@ -1091,7 +1115,25 @@ public class WebServer extends Thread implements RTKListener {
                                             String property = getParam("property", param);
                                             String value = getParam("value", param);
                                             if (property.length() > 0 && value.length() > 0) {
-                                                BukkitProperties.setString(property, value);
+                                                if (property.equalsIgnoreCase("white-list")) {
+                                                    if (value.equalsIgnoreCase("true")) {
+                                                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist on");
+                                                        if (milkAdminInstance != null) {
+                                                            if(useCustomWhitelist)
+                                                            milkAdminInstance.WLCustom = true;
+                                                            milkAdminInstance.MCWhitelist = true;
+                                                        }
+                                                    } else if (value.equalsIgnoreCase("false")) {
+                                                        if (milkAdminInstance != null) {
+                                                            if(useCustomWhitelist)
+                                                            milkAdminInstance.WLCustom = false;
+                                                            milkAdminInstance.MCWhitelist = false;
+                                                        }
+                                                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist off");
+                                                    }
+                                                } else {
+                                                    BukkitProperties.setString(property, value);
+                                                }
                                                 json = "ok:editedproperty";
                                             } else {
                                                 json = "error:badparameters";

@@ -19,7 +19,12 @@ public class milkAdminUpdateThread {
     public milkAdminUpdateThread(MilkAdmin i) {
         milkAdminInstance = i;
         players = new CopyOnWriteArrayList<String>();
-        setWhiteListedPlayersAsList(milkAdminInstance.WL.getWhitelistedPlayersList());
+        if (milkAdminInstance.WL != null) {
+            List<String> whitelist = milkAdminInstance.WL.getWhitelist();
+            if (!whitelist.isEmpty()) {
+                setWhiteListedPlayersAsList(whitelist);
+            }
+        }
     }
 
     public void updateLists(final List<String> players) {
@@ -27,8 +32,10 @@ public class milkAdminUpdateThread {
 
             @Override
             public void run() {
-                milkAdminInstance.WL.updateLists(players, true);
-                setWhiteListedPlayersAsList(players);
+                if (milkAdminInstance.WL != null) {
+                    milkAdminInstance.WL.updateLists(players);
+                    setWhiteListedPlayersAsList(players);
+                }
             }
         }).start();
     }
@@ -38,8 +45,13 @@ public class milkAdminUpdateThread {
 
             @Override
             public void run() {
-                milkAdminInstance.WL.update();
-                setWhiteListedPlayersAsList(milkAdminInstance.WL.getWhitelistedPlayersList());
+                if (milkAdminInstance.WL != null) {
+                    milkAdminInstance.WL.update();
+                    List<String> whitelist = milkAdminInstance.WL.getWhitelist();
+                    if (!whitelist.isEmpty()) {
+                        setWhiteListedPlayersAsList(whitelist);
+                    }
+                }
             }
         }).start();
     }
@@ -49,8 +61,10 @@ public class milkAdminUpdateThread {
 
             @Override
             public void run() {
-                milkAdminInstance.WL.myAddDefaultPlayer(player);
-                addWhiteListedPlayersAsList(player);
+                if (milkAdminInstance.WL != null) {
+                    milkAdminInstance.WL.myAddDefaultPlayer(player);
+                    addWhiteListedPlayersAsList(player);
+                }
             }
         }).start();
     }
@@ -60,8 +74,10 @@ public class milkAdminUpdateThread {
 
             @Override
             public void run() {
-                milkAdminInstance.WL.myRemovePlayer(player);
-                removeWhiteListedPlayersAsList(player);
+                if (milkAdminInstance.WL != null) {
+                    milkAdminInstance.WL.myRemovePlayer(player);
+                    removeWhiteListedPlayersAsList(player);
+                }
             }
         }).start();
     }
@@ -70,16 +86,44 @@ public class milkAdminUpdateThread {
         this.players.clear();
         this.players.addAll(players);
     }
-    
+
     public synchronized void addWhiteListedPlayersAsList(String player) {
         this.players.add(player);
     }
-    
+
     public synchronized void removeWhiteListedPlayersAsList(String player) {
         this.players.remove(player);
     }
 
     public synchronized List<String> getWhiteListedPlayersAsList() {
         return players;
+    }
+
+    public void addAllWhiteListedPlayers() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (milkAdminInstance.WL != null) {
+                    List<String> players1 = milkAdminInstance.WL.getPlayers();
+                    milkAdminInstance.WL.updateLists(players1);
+                    setWhiteListedPlayersAsList(players1);
+                }
+            }
+        }).start();
+    }
+
+    public void removeAllWhiteListedPlayers() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (milkAdminInstance.WL != null) {
+                    List<String> players1 = new CopyOnWriteArrayList<String>();
+                    milkAdminInstance.WL.updateLists(players1);
+                    setWhiteListedPlayersAsList(players1);
+                }
+            }
+        }).start();
     }
 }
