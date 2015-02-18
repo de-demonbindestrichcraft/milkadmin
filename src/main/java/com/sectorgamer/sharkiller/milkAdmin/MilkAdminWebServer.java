@@ -6,8 +6,11 @@ package com.sectorgamer.sharkiller.milkAdmin;
 
 import com.sectorgamer.sharkiller.milkAdmin.util.MilkAdminLog;
 import de.demonbindestrichcraft.lib.bukkit.wbukkitlib.player.WPlayerInterface;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -138,6 +141,45 @@ public class MilkAdminWebServer {
         webServer.print(json, "text/plain");
     }
 
+    public static void banPlayerUUID(WebServer webServer, MilkAdmin milkAdminInstance, String uuid, String cause, String BannedString) {
+        String json = "";
+        if (uuid.length() > 0) {
+            String banstring = BannedString;
+            if (cause.length() > 0) {
+                banstring = cause;
+            }
+            UUID fromString = UUID.fromString(uuid);
+            try {
+                Player p = Bukkit.getPlayer(fromString);
+                if (p != null) {
+                    milkAdminInstance.BL.banListName.setString(p.getName().toLowerCase(), banstring);
+                    milkAdminInstance.BL.banListUuid.setString(uuid, banstring);
+                    p.kickPlayer(banstring);
+                    MilkAdminLog.info(p.getName() + " banned for: " + banstring);
+                    json = "ok:playerbanned:_NAME_," + p.getName().toLowerCase();
+                    webServer.print(json, "text/plain");
+                    return;
+                }
+            } catch (Throwable ex) {
+            }
+            try {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(fromString);
+                if (offlinePlayer != null) {
+                    milkAdminInstance.BL.banListName.setString(offlinePlayer.getName().toLowerCase(), banstring);
+                    milkAdminInstance.BL.banListUuid.setString(uuid, banstring);
+                    MilkAdminLog.info(offlinePlayer.getName() + " banned for: " + banstring);
+                    json = "ok:playerbanned:_NAME_," + offlinePlayer.getName().toLowerCase();
+                    webServer.print(json, "text/plain");
+                    return;
+                }
+            } catch (Throwable ex) {
+            }
+        } else {
+            json = "error:badparameters";
+        }
+        webServer.print(json, "text/plain");
+    }
+
     public static void banPlayerIp(WebServer webServer, MilkAdmin milkAdminInstance, String ip, String cause, String BannedString) {
         String json = "";
         if (ip.length() > 0) {
@@ -168,6 +210,21 @@ public class MilkAdminWebServer {
             if (milkAdminInstance.BL.banListName.keyExists(user)) {
                 milkAdminInstance.BL.banListName.removeKey(user);
                 json = "ok:playerunbanned:_NAME_," + user;
+            } else {
+                json = "error:playernotbanned";
+            }
+        } else {
+            json = "error:badparameters";
+        }
+        webServer.print(json, "text/plain");
+    }
+
+    public static void unbanPlayerUUID(WebServer webServer, MilkAdmin milkAdminInstance, String uuid) {
+        String json = "";
+        if (uuid.length() > 0) {
+            if (milkAdminInstance.BL.banListUuid.keyExists(uuid)) {
+                milkAdminInstance.BL.banListUuid.removeKey(uuid);
+                json = "ok:playerunbanned:_NAME_," + uuid;
             } else {
                 json = "error:playernotbanned";
             }
@@ -325,8 +382,9 @@ public class MilkAdminWebServer {
     }
 
     public static void teleportToLocation(WebServer webServer, String user, String x, String y, String z) {
-        if(user==null)
-            user="";
+        if (user == null) {
+            user = "";
+        }
         if (x == null) {
             x = "";
         } else if (y == null) {
@@ -349,21 +407,17 @@ public class MilkAdminWebServer {
         }
         webServer.print(json, "text/plain");
     }
-    
-    public static double[] getDoubles(String x,String y,String z)
-    {
-        double[] xyz=new double[3];
-        if(x==null)
-        {
-            x="";
+
+    public static double[] getDoubles(String x, String y, String z) {
+        double[] xyz = new double[3];
+        if (x == null) {
+            x = "";
         }
-        if(y==null)
-        {
-            y="";
+        if (y == null) {
+            y = "";
         }
-        if(z==null)
-        {
-            z="";
+        if (z == null) {
+            z = "";
         }
         if (x.contains(",")) {
             String replace = x.replace(',', '.');
@@ -377,36 +431,32 @@ public class MilkAdminWebServer {
             String replace = z.replace(',', '.');
             z = replace;
         }
-        if (!x.contains(".")&&x.length()>0) {
+        if (!x.contains(".") && x.length() > 0) {
             x += ".0";
         }
-        if (!y.contains(".")&&y.length()>0) {
+        if (!y.contains(".") && y.length() > 0) {
             y += ".0";
         }
-        if (!z.contains(".")&&z.length()>0) {
+        if (!z.contains(".") && z.length() > 0) {
             z += ".0";
         }
-        try
-        {
-            xyz[0]=Double.parseDouble(x);
-            xyz[1]=Double.parseDouble(y);
-            xyz[2]=Double.parseDouble(z);
+        try {
+            xyz[0] = Double.parseDouble(x);
+            xyz[1] = Double.parseDouble(y);
+            xyz[2] = Double.parseDouble(z);
         } catch (Throwable ex) {
-            xyz[0]=0.0d;
-            xyz[1]=0.0d;
-            xyz[2]=0.0d;
+            xyz[0] = 0.0d;
+            xyz[1] = 0.0d;
+            xyz[2] = 0.0d;
         }
-        if(xyz[0]<0.0d)
-        {
-            xyz[0]=0.0d;
+        if (xyz[0] < 0.0d) {
+            xyz[0] = 0.0d;
         }
-        if(xyz[1]<0.0d)
-        {
-            xyz[1]=0.0d;
+        if (xyz[1] < 0.0d) {
+            xyz[1] = 0.0d;
         }
-        if(xyz[2]<0.0d)
-        {
-            xyz[2]=0.0d;
+        if (xyz[2] < 0.0d) {
+            xyz[2] = 0.0d;
         }
         return xyz;
     }
@@ -431,8 +481,14 @@ public class MilkAdminWebServer {
         if (user.length() > 0) {
             Player p = WPlayerInterface.getOnlinePlayerOld(user);
             if (p != null && p.isOnline()) {
+                String uuid = "";
+                try {
+                    uuid = p.getUniqueId().toString();
+                } catch (Throwable ex) {
+                    uuid = "false";
+                }
                 String ip_port = String.valueOf(p.getAddress()).split("/")[1];
-                json = "{\"status\":\"ok\",\"ip\":\"" + ip_port.split(":")[0] + "\",\"port\":\"" + ip_port.split(":")[1] + "\"}";
+                json = "{\"status\":\"ok\",\"ip\":\"" + ip_port.split(":")[0] + "\",\"port\":\"" + ip_port.split(":")[1] + "\",\"uuid\":\"" + uuid + "\"}";
             } else {
                 json = "{\"status\":\"error\", \"error\":\"playernotconnected\"}";
             }

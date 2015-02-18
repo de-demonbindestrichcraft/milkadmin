@@ -22,16 +22,19 @@ public class Banlist {
 
     public PropertiesFile banListName;
     public PropertiesFile banListIp;
+    public PropertiesFile banListUuid;
     private MilkAdmin plugin;
 
     public Banlist(MilkAdmin i) {
         this.plugin = i;
         banListName = new PropertiesFile(plugin.BLDir + File.separator + "banlistname.ini");
         banListIp = new PropertiesFile(plugin.BLDir + File.separator + "banlistip.ini");
+        banListUuid = new PropertiesFile(plugin.BLDir + File.separator + "banlistuuid.ini");
 
         try {
             banListName.load();
             banListIp.load();
+            banListUuid.load();
         } catch (IOException e) {
             MilkAdminLog.severe("Could not load banlist files!", e);
         }
@@ -53,15 +56,50 @@ public class Banlist {
      * @param ip Ip address to check
      * @return Ban cause or null if not banned
      */
-    public String isBanned(String name, String ip) {
+    public String isBanned(String name, String ip, String uuid) {
         String ret = null;
-        if (banListName.keyExists(name)) {
+        if (banListName.keyExists(name) && !name.equals("false")) {
             ret = banListName.getString(name, plugin.BLMessage);
-        } else if (banListIp.keyExists(ip)) {
+        } else if (banListIp.keyExists(ip) && !ip.equals("false")) {
             ret = banListIp.getString(ip, plugin.BLMessage);
+        } else if (banListUuid.keyExists(uuid) && !uuid.equals("false")) {
+            ret = banListUuid.getString(uuid, plugin.BLMessage);
         }
-
         return ret;
+    }
+
+    public boolean isBanned(Player player) {
+        if (player == null) {
+            return false;
+        }
+        if (player.isBanned()) {
+            return true;
+        }
+        String ip = "false";
+        String uuid = "false";
+        String name = "false";
+        try {
+            ip = player.getAddress().getAddress().getHostAddress();
+        } catch (Throwable ex) {
+            ip = "false";
+        }
+        try {
+            name = player.getName().toLowerCase();
+        } catch (Throwable ex) {
+            name = "false";
+        }
+        try {
+            uuid = player.getUniqueId().toString();
+        } catch (Throwable ex) {
+            uuid = "false";
+        }
+        String banned = isBanned(name,ip,uuid);
+
+        if (banned != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void update() {
@@ -70,27 +108,23 @@ public class Banlist {
         for (Player p : players) {
             String user = p.getName();
             if (p != null && p.isOnline()) {
-                if(p.isBanned())
-                {
+                if (isBanned(p)) {
                     banListName.setString(user, banstring);
+                    String uuid = "";
+                    try {
+                        uuid = p.getUniqueId().toString();
+                        banListUuid.setString(uuid, banstring);
+                    } catch (Throwable ex) {
+                        uuid = "";
+                    }
                     p.kickPlayer(banstring);
                     MilkAdminLog.info(user + " banned for: " + banstring);
-                } else {
-                    banListName.removeKey(user);
-                }
-            } else {
-                if(p.isBanned())
-                {
-                    banListName.setString(user, banstring);
-                } else {
-                    banListName.removeKey(user);
                 }
             }
         }
     }
-    
-    public void removeAllPlayersFromBanList()
-    {
+
+    public void removeAllPlayersFromBanList() {
         this.banListIp.clear();
         this.banListName.clear();
     }

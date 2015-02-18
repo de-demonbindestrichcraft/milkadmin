@@ -630,6 +630,17 @@ public class WebServer extends Thread implements RTKListener {
                     listban = listban + ",";
                 }
             }
+            listban = listban + "]},";
+            Map<String, String> banUuid = milkAdminInstance.BL.banListUuid.returnMap();
+            i = banUuid.entrySet().iterator();
+            listban = listban + "{\"uuids\":[";
+            while (i.hasNext()) {
+                e = i.next();
+                listban = listban + "{\"uuid\":\"" + e.getKey() + "\",\"cause\":\"" + e.getValue() + "\"}";
+                if (i.hasNext()) {
+                    listban = listban + ",";
+                }
+            }
             listban = listban + "]}]";
         } catch (Exception err) {
             debug("ERROR in listBans(): " + err.getMessage());
@@ -1442,6 +1453,21 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                    } else if (url.startsWith("/player/ban_uuid")) {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String uuid = getParam("uuid", param);
+                                            final String cause = getParam("cause", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
+
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.banPlayerUUID(webServer, myMilkAdminInstance, uuid, cause, BannedString);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/ban_ip")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1468,6 +1494,20 @@ public class WebServer extends Thread implements RTKListener {
                                                 @Override
                                                 public void run() {
                                                     MilkAdminWebServer.unbanPlayer(webServer, myMilkAdminInstance, user);
+                                                }
+                                            }).start();
+                                        }
+                                    } else if (url.startsWith("/player/unban_uuid")) {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String uuid = getParam("uuid", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
+
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.unbanPlayerUUID(webServer, myMilkAdminInstance, uuid);
                                                 }
                                             }).start();
                                         }
