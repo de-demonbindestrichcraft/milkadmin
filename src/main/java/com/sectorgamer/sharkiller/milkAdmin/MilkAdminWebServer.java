@@ -311,7 +311,7 @@ public class MilkAdminWebServer {
         String json = "";
         if (user.length() > 0 && touser.length() > 0) {
             Player p = WPlayerInterface.getOnlinePlayerOld(user);
-            Player p2 = milkAdminInstance.getServer().getPlayer(touser);
+            Player p2 = WPlayerInterface.getOnlinePlayerOld(touser);
             if (p != null && p2 != null && p.isOnline() && p2.isOnline()) {
                 p.teleport(p2);
                 json = "ok:playerteleported";
@@ -325,11 +325,21 @@ public class MilkAdminWebServer {
     }
 
     public static void teleportToLocation(WebServer webServer, String user, String x, String y, String z) {
+        if(user==null)
+            user="";
+        if (x == null) {
+            x = "";
+        } else if (y == null) {
+            y = "";
+        } else if (z == null) {
+            z = "";
+        }
         String json = "";
-        if (user.length() > 0 && x.length() > 0 && y.length() > 1 && y.length() < 128 && z.length() > 0) {
+        if (user.length() > 0 && x.length() > 0 && y.length() > 0 && z.length() > 0) {
+            double[] xyz = getDoubles(x, y, z);
             Player p = WPlayerInterface.getOnlinePlayerOld(user);
             if (p != null && p.isOnline()) {
-                p.teleport(new Location(p.getWorld(), Integer.valueOf(x), Integer.valueOf(y), Integer.valueOf(z)));
+                p.teleport(new Location(p.getWorld(), xyz[0], xyz[1], xyz[2]));
                 json = "ok:playerteleported";
             } else {
                 json = "error:playernotconnected";
@@ -338,6 +348,67 @@ public class MilkAdminWebServer {
             json = "error:badparameters";
         }
         webServer.print(json, "text/plain");
+    }
+    
+    public static double[] getDoubles(String x,String y,String z)
+    {
+        double[] xyz=new double[3];
+        if(x==null)
+        {
+            x="";
+        }
+        if(y==null)
+        {
+            y="";
+        }
+        if(z==null)
+        {
+            z="";
+        }
+        if (x.contains(",")) {
+            String replace = x.replace(',', '.');
+            x = replace;
+        }
+        if (y.contains(",")) {
+            String replace = y.replace(',', '.');
+            y = replace;
+        }
+        if (z.contains(",")) {
+            String replace = z.replace(',', '.');
+            z = replace;
+        }
+        if (!x.contains(".")&&x.length()>0) {
+            x += ".0";
+        }
+        if (!y.contains(".")&&y.length()>0) {
+            y += ".0";
+        }
+        if (!z.contains(".")&&z.length()>0) {
+            z += ".0";
+        }
+        try
+        {
+            xyz[0]=Double.parseDouble(x);
+            xyz[1]=Double.parseDouble(y);
+            xyz[2]=Double.parseDouble(z);
+        } catch (Throwable ex) {
+            xyz[0]=0.0d;
+            xyz[1]=0.0d;
+            xyz[2]=0.0d;
+        }
+        if(xyz[0]<0.0d)
+        {
+            xyz[0]=0.0d;
+        }
+        if(xyz[1]<0.0d)
+        {
+            xyz[1]=0.0d;
+        }
+        if(xyz[2]<0.0d)
+        {
+            xyz[2]=0.0d;
+        }
+        return xyz;
     }
 
     public static void playerIsOnline(WebServer webServer, String user) {
