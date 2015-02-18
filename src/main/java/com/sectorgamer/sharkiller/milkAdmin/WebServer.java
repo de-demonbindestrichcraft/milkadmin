@@ -1372,371 +1372,246 @@ public class WebServer extends Thread implements RTKListener {
                                     //PLAYER AREA
                                     ////////////////
                                     else if (url.startsWith("/player/kick")) {
-                                        String user = getParam("user", param);
-                                        String cause = getParam("cause", param);
-                                        if (user.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                String kickString = KickedString;
-                                                if (cause.length() > 0) {
-                                                    kickString = cause;
-                                                }
-                                                p.kickPlayer(kickString);
-                                                json = "ok:kickplayer:_NAME_," + user;
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final String cause = getParam("cause", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.kickPlayer(webServer, user, cause, KickedString);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/give_item")) {
-                                        String user = getParam("user", param);
-                                        String item = getParam("item", param);
-                                        String amount = getParam("amount", param);
-                                        if (user.length() > 0 && amount.length() > 0 && item.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                p.getInventory().addItem(new ItemStack(Material.getMaterial(Integer.valueOf(item)), Integer.valueOf(amount)));
-                                                json = "ok:itemsgiven:_NAME_," + user + ",_AMOUNT_," + amount + ",_ITEM_," + Material.getMaterial(Integer.valueOf(item));
-                                            } else {
-                                                json = "error:playernotconnected";
+                                        final String user = getParam("user", param);
+                                        final String item = getParam("item", param);
+                                        final String amount = getParam("amount", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.givePlayerItem(webServer, user, amount, item);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/remove_item")) {
-                                        String user = getParam("user", param);
-                                        String item = getParam("item", param);
-                                        String amount = getParam("amount", param);
-                                        if (user.length() > 0 && amount.length() > 0 && item.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                p.getInventory().removeItem(new ItemStack(Material.getMaterial(Integer.valueOf(item)), Integer.valueOf(amount)));
-                                                json = "ok:itemsremoved:_NAME_," + user + ",_AMOUNT_," + amount + ",_ITEM_," + Material.getMaterial(Integer.valueOf(item));
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final String item = getParam("item", param);
+                                        final String amount = getParam("amount", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.removePlayerItem(webServer, user, amount, item);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/get_health")) {
-                                        String user = getParam("user", param);
-                                        if (user.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                json = "ok:" + String.valueOf(p.getHealth());
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.getPlayerHealth(webServer, user);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/set_health")) {
+                                        final String user = getParam("user", param);
+                                        final String amount = getParam("amount", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
-                                        String user = getParam("user", param);
-                                        String amount = getParam("amount", param);
-                                        if (user.length() > 0 && amount.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                try {
-                                                    int health = Integer.parseInt(amount, 10);
-                                                    if (health >= 0 && health <= 20) {
-                                                        p.setHealth(health);
-                                                        if (health == 0) {
-                                                            json = "ok:playerkilled:_NAME_," + user;
-                                                        } else {
-                                                            json = "ok:healthchanged:_NAME_," + user + ",_AMOUNT_," + amount;
-                                                        }
-                                                    } else {
-                                                        json = "error:badparameters";
-                                                    }
-                                                } catch (NumberFormatException err) {
-                                                    json = "error:badparameters";
-                                                }
-                                            } else {
-                                                json = "error:playernotconnected";
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.setPlayerHealth(webServer, user, amount);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/ban_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
-                                            String user = getParam("user", param);
-                                            String cause = getParam("cause", param);
-                                            if (user.length() > 0) {
-                                                String banstring = BannedString;
-                                                if (cause.length() > 0) {
-                                                    banstring = cause;
-                                                }
-                                                user = milkAdminInstance.BL.getPlayerName(user);
-                                                Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                                if (p != null && p.isOnline()) {
-                                                    milkAdminInstance.BL.banListName.setString(p.getName(), banstring);
-                                                    p.kickPlayer(banstring);
-                                                    MilkAdminLog.info(p.getName() + " banned for: " + banstring);
-                                                } else {
-                                                    milkAdminInstance.BL.banListName.setString(user, banstring);
-                                                }
-                                                json = "ok:playerbanned:_NAME_," + user;
-                                            } else {
-                                                json = "error:badparameters";
-                                            }
-                                            print(json, "text/plain");
-                                        }
+                                            final String user = getParam("user", param);
+                                            final String cause = getParam("cause", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new Thread(new Runnable() {
 
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.banPlayer(webServer, myMilkAdminInstance, user, cause, BannedString);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/ban_ip")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
-                                            String ip = getParam("ip", param);
-                                            String cause = getParam("cause", param);
-                                            if (ip.length() > 0) {
-                                                String banstring = BannedString;
-                                                if (cause.length() > 0) {
-                                                    banstring = cause;
-                                                }
-                                                ip = milkAdminInstance.BL.getPlayerName(ip);
-                                                Player p = WPlayerInterface.getOnlinePlayerOld(ip);
-                                                if (p != null && p.isOnline()) {
-                                                    milkAdminInstance.BL.banListIp.setString(String.valueOf(p.getAddress()).split("/")[1].split(":")[0], banstring);
-                                                    p.kickPlayer(banstring);
-                                                    MilkAdminLog.info(p.getName() + " banned for: " + banstring);
-                                                } else {
-                                                    milkAdminInstance.BL.banListIp.setString(ip, banstring);
-                                                }
-                                                json = "ok:ipbanned:_IP_," + ip;
-                                            } else {
-                                                json = "error:badparameters";
-                                            }
-                                            print(json, "text/plain");
-                                        }
+                                            final String ip = getParam("ip", param);
+                                            final String cause = getParam("cause", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new Thread(new Runnable() {
 
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.banPlayerIp(webServer, myMilkAdminInstance, ip, cause, BannedString);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/unban_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
-                                            String user = getParam("user", param);
-                                            user = milkAdminInstance.BL.getPlayerName(user);
-                                            if (user.length() > 0) {
-                                                if (milkAdminInstance.BL.banListName.keyExists(user)) {
-                                                    milkAdminInstance.BL.banListName.removeKey(user);
-                                                    json = "ok:playerunbanned:_NAME_," + user;
-                                                } else {
-                                                    json = "error:playernotbanned";
-                                                }
-                                            } else {
-                                                json = "error:badparameters";
-                                            }
-                                            print(json, "text/plain");
-                                        }
+                                            final String user = getParam("user", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new Thread(new Runnable() {
 
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.unbanPlayer(webServer, myMilkAdminInstance, user);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/unban_ip")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
-                                            String ip = getParam("user", param);
-                                            ip = milkAdminInstance.BL.getPlayerName(ip);
-                                            if (ip.length() > 0) {
-                                                if (milkAdminInstance.BL.banListIp.keyExists(ip)) {
-                                                    milkAdminInstance.BL.banListIp.removeKey(ip);
-                                                    json = "ok:ipunbanned:_IP_," + ip;
-                                                } else {
-                                                    json = "error:ipnotbanned";
-                                                }
-                                            } else {
-                                                json = "error:badparameters";
-                                            }
-                                            print(json, "text/plain");
-                                        }
+                                            final String ip = getParam("user", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new Thread(new Runnable() {
 
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.unbanIp(webServer, myMilkAdminInstance, ip);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.equals("/player/banlist.json")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
-                                            listBans();
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new Thread(new Runnable() {
+
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.listBans(webServer);
+                                                }
+                                            }).start();
                                         }
                                     } else if (url.startsWith("/player/shoot_arrow")) {
-                                        String user = getParam("user", param);
-                                        int amount = Integer.parseInt(getParam("amount", param));
-                                        if (user.length() > 0 && amount > 0 && amount < 1000) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                for (int i = 0; i < amount; i++) {
-                                                    p.launchProjectile(org.bukkit.entity.Arrow.class);
-                                                }
-                                                json = "ok:arrowshooted";
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final int amount = Integer.parseInt(getParam("amount", param));
+                                        final WebServer webServer = this;
+                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.shootArrow(webServer, user, amount);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/shoot_fireball")) {
-                                        String user = getParam("user", param);
-                                        int amount = Integer.parseInt(getParam("amount", param));
-                                        if (user.length() > 0 && amount > 0 && amount < 1000) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                for (int i = 0; i < amount; i++) {
-                                                    p.launchProjectile(org.bukkit.entity.Fireball.class);
-                                                }
+                                        final String user = getParam("user", param);
+                                        final int amount = Integer.parseInt(getParam("amount", param));
+                                        final WebServer webServer = this;
+                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                        new Thread(new Runnable() {
 
-                                                json = "ok:fireballshooted";
-                                            } else {
-                                                json = "error:playernotconnected";
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.shootFireball(webServer, user, amount);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/throw_snowball")) {
-                                        String user = getParam("user", param);
-                                        int amount = Integer.parseInt(getParam("amount", param));
-                                        if (user.length() > 0 && amount > 0 && amount < 1000) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                for (int i = 0; i < amount; i++) {
-                                                    p.launchProjectile(org.bukkit.entity.Snowball.class);
-                                                }
+                                        final String user = getParam("user", param);
+                                        final int amount = Integer.parseInt(getParam("amount", param));
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
-                                                json = "ok:throwsnowball";
-                                            } else {
-                                                json = "error:playernotconnected";
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.throwSnowball(webServer, user, amount);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/throw_egg")) {
-                                        String user = getParam("user", param);
-                                        int amount = Integer.parseInt(getParam("amount", param));
-                                        if (user.length() > 0 && amount > 0 && amount < 1000) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                for (int i = 0; i < amount; i++) {
-                                                    p.launchProjectile(org.bukkit.entity.Egg.class);
-                                                }
+                                        final String user = getParam("user", param);
+                                        final int amount = Integer.parseInt(getParam("amount", param));
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
-                                                json = "ok:throwegg";
-                                            } else {
-                                                json = "error:playernotconnected";
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.throwEgg(webServer, user, amount);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/throw_bomb")) {
-                                        String user = getParam("user", param);
-                                        int amount = Integer.parseInt(getParam("amount", param));
-                                        if (user.length() > 0 && amount > 0 && amount < 1000) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                for (int i = 0; i < amount; i++) {
-                                                    p.launchProjectile(org.bukkit.entity.SmallFireball.class);
-                                                }
+                                        final String user = getParam("user", param);
+                                        final int amount = Integer.parseInt(getParam("amount", param));
+                                        final WebServer webServer = this;
+                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                        new Thread(new Runnable() {
 
-                                                json = "ok:throwegg";
-                                            } else {
-                                                json = "error:playernotconnected";
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.throwBomb(webServer, user, amount);
                                             }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
-
+                                        }).start();
                                     } else if (url.startsWith("/player/change_display_name")) {
-                                        String user = getParam("user", param);
-                                        String name = getParam("name", param);
-                                        if (user.length() > 0 && name.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                p.setDisplayName(name);
-                                                json = "ok:changename:_OLD_," + user + ",_NEW_," + name;
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final String name = getParam("name", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.changeDisplayName(webServer, user, name);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/teleport_to_player")) {
-                                        String user = getParam("user", param);
-                                        String touser = getParam("to_user", param);
-                                        if (user.length() > 0 && touser.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            Player p2 = milkAdminInstance.getServer().getPlayer(touser);
-                                            if (p != null && p2 != null && p.isOnline() && p2.isOnline()) {
-                                                p.teleport(p2);
-                                                json = "ok:playerteleported";
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final String touser = getParam("to_user", param);
+                                        final WebServer webServer = this;
+                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.teleportToPlayer(webServer, myMilkAdminInstance, user, touser);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/teleport_to_location")) {
-                                        String user = getParam("user", param);
-                                        String x = getParam("x", param);
-                                        String y = getParam("y", param);
-                                        String z = getParam("z", param);
-                                        if (user.length() > 0 && x.length() > 0 && y.length() > 1 && y.length() < 128 && z.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                p.teleport(new Location(p.getWorld(), Integer.valueOf(x), Integer.valueOf(y), Integer.valueOf(z)));
-                                                json = "ok:playerteleported";
-                                            } else {
-                                                json = "error:playernotconnected";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final String x = getParam("x", param);
+                                        final String y = getParam("y", param);
+                                        final String z = getParam("z", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.teleportToLocation(webServer, user, x, y, z);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/is_online")) {
-                                        String user = getParam("user", param);
-                                        if (user.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                json = "ok:" + String.valueOf(p.isOnline());
-                                            } else {
-                                                json = "ok:false";
-                                            }
-                                        } else {
-                                            json = "error:badparameters";
-                                        }
-                                        print(json, "text/plain");
+                                        final String user = getParam("user", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.playerIsOnline(webServer, user);
+                                            }
+                                        }).start();
                                     } else if (url.startsWith("/player/get_ip_port.json")) {
-                                        String user = getParam("user", param);
-                                        if (user.length() > 0) {
-                                            Player p = WPlayerInterface.getOnlinePlayerOld(user);
-                                            if (p != null && p.isOnline()) {
-                                                String ip_port = String.valueOf(p.getAddress()).split("/")[1];
-                                                json = "{\"status\":\"ok\",\"ip\":\"" + ip_port.split(":")[0] + "\",\"port\":\"" + ip_port.split(":")[1] + "\"}";
-                                            } else {
-                                                json = "{\"status\":\"error\", \"error\":\"playernotconnected\"}";
-                                            }
-                                        } else {
-                                            json = "{\"status\":\"error\", \"error\":\"badparameters\"}";
-                                        }
-                                        print(json, "application/json");
+                                        final String user = getParam("user", param);
+                                        final WebServer webServer = this;
+                                        new Thread(new Runnable() {
 
+                                            @Override
+                                            public void run() {
+                                                MilkAdminWebServer.getIpPort(webServer, user);
+                                            }
+                                        }).start();
                                     } else if (url.equals("/") || url.equals("/index.html")) {
                                         readFileAsBinary(htmlDir + "/index.html", "text/html", true);
 
