@@ -1375,7 +1375,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String user = getParam("user", param);
                                         final String cause = getParam("cause", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1387,7 +1387,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String item = getParam("item", param);
                                         final String amount = getParam("amount", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1399,7 +1399,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String item = getParam("item", param);
                                         final String amount = getParam("amount", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1409,7 +1409,7 @@ public class WebServer extends Thread implements RTKListener {
                                     } else if (url.startsWith("/player/get_health")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1420,7 +1420,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String user = getParam("user", param);
                                         final String amount = getParam("amount", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1434,7 +1434,7 @@ public class WebServer extends Thread implements RTKListener {
                                             final String cause = getParam("cause", param);
                                             final WebServer webServer = this;
                                             final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                            new Thread(new Runnable() {
+                                            new MilkAdminThread(new Runnable() {
 
                                                 @Override
                                                 public void run() {
@@ -1449,7 +1449,7 @@ public class WebServer extends Thread implements RTKListener {
                                             final String cause = getParam("cause", param);
                                             final WebServer webServer = this;
                                             final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                            new Thread(new Runnable() {
+                                            new MilkAdminThread(new Runnable() {
 
                                                 @Override
                                                 public void run() {
@@ -1463,7 +1463,7 @@ public class WebServer extends Thread implements RTKListener {
                                             final String user = getParam("user", param);
                                             final WebServer webServer = this;
                                             final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                            new Thread(new Runnable() {
+                                            new MilkAdminThread(new Runnable() {
 
                                                 @Override
                                                 public void run() {
@@ -1477,7 +1477,7 @@ public class WebServer extends Thread implements RTKListener {
                                             final String ip = getParam("user", param);
                                             final WebServer webServer = this;
                                             final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                            new Thread(new Runnable() {
+                                            new MilkAdminThread(new Runnable() {
 
                                                 @Override
                                                 public void run() {
@@ -1490,7 +1490,7 @@ public class WebServer extends Thread implements RTKListener {
                                         if (!my.endsWith("NL")) {
                                             final WebServer webServer = this;
                                             final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                            new Thread(new Runnable() {
+                                            new MilkAdminThread(new Runnable() {
 
                                                 @Override
                                                 public void run() {
@@ -1503,7 +1503,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final int amount = Integer.parseInt(getParam("amount", param));
                                         final WebServer webServer = this;
                                         final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1515,7 +1515,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final int amount = Integer.parseInt(getParam("amount", param));
                                         final WebServer webServer = this;
                                         final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1526,7 +1526,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String user = getParam("user", param);
                                         final int amount = Integer.parseInt(getParam("amount", param));
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1537,7 +1537,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String user = getParam("user", param);
                                         final int amount = Integer.parseInt(getParam("amount", param));
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1549,7 +1549,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final int amount = Integer.parseInt(getParam("amount", param));
                                         final WebServer webServer = this;
                                         final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1560,7 +1560,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String user = getParam("user", param);
                                         final String name = getParam("name", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1572,7 +1572,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String touser = getParam("to_user", param);
                                         final WebServer webServer = this;
                                         final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1585,7 +1585,7 @@ public class WebServer extends Thread implements RTKListener {
                                         final String y = getParam("y", param);
                                         final String z = getParam("z", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1595,7 +1595,7 @@ public class WebServer extends Thread implements RTKListener {
                                     } else if (url.startsWith("/player/is_online")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {
@@ -1605,7 +1605,7 @@ public class WebServer extends Thread implements RTKListener {
                                     } else if (url.startsWith("/player/get_ip_port.json")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
-                                        new Thread(new Runnable() {
+                                        new MilkAdminThread(new Runnable() {
 
                                             @Override
                                             public void run() {

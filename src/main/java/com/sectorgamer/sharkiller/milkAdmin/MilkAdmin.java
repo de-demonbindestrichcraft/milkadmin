@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -70,6 +71,7 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
     private WhitelistCommandExecuter w;
     PluginManager pm;
     public boolean MCWhitelist;
+    private static Plugin milkAdmin=null;
 
     public boolean setup() {
         try {
@@ -287,6 +289,7 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
         } else {
             MilkAdminLog.severe("Failed to initialized!");
         }
+        milkAdmin=this;
     }
 
     @Override
@@ -400,5 +403,27 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
         } else {
             sender.sendMessage(ChatColor.RED + "You do not have access to this command.");
         }
+    }
+    
+    public static Plugin getMilkAdminInstance()
+    {
+        if(milkAdmin==null)
+        {
+            Plugin[] plugins = Bukkit.getServer().getPluginManager().getPlugins();
+            if(plugins==null||plugins.length==0)
+                return null;
+            for(Plugin plugin:plugins)
+            {
+                if(plugin==null)
+                    continue;
+                if(plugin.getName().equalsIgnoreCase("milkAdmin"))
+                {
+                    milkAdmin=plugin;
+                    return plugin;
+                }
+            }
+            return null;
+        }
+        return milkAdmin;
     }
 }
