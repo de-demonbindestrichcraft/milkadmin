@@ -1065,28 +1065,34 @@ public class WebServer extends Thread implements RTKListener {
                                         print(json, "text/plain");
 
                                     } else if (url.startsWith("/server/disable_plugin")) {
-                                        String plugin = getParam("plugin", param);
-                                        if (plugin.length() > 0) {
-                                            if (milkAdminInstance.getServer().getPluginManager().isPluginEnabled(plugin)) {
-                                                milkAdminInstance.getServer().getPluginManager().disablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
-                                                json = "ok:plugindisabled:_NAME_," + plugin;
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String plugin = getParam("plugin", param);
+                                            if (plugin.length() > 0) {
+                                                if (milkAdminInstance.getServer().getPluginManager().isPluginEnabled(plugin)) {
+                                                    milkAdminInstance.getServer().getPluginManager().disablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
+                                                    json = "ok:plugindisabled:_NAME_," + plugin;
+                                                } else {
+                                                    json = "ok:pluginnotenabled";
+                                                }
                                             } else {
-                                                json = "ok:pluginnotenabled";
+                                                json = "error:badparameters";
                                             }
-                                        } else {
-                                            json = "error:badparameters";
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/server/enable_plugin")) {
-                                        String plugin = getParam("plugin", param);
-                                        if (plugin.length() > 0) {
-                                            milkAdminInstance.getServer().getPluginManager().enablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
-                                            json = "ok:pluginenabled:_NAME_," + plugin;
-                                        } else {
-                                            json = "error:badparameters";
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            String plugin = getParam("plugin", param);
+                                            if (plugin.length() > 0) {
+                                                milkAdminInstance.getServer().getPluginManager().enablePlugin(milkAdminInstance.getServer().getPluginManager().getPlugin(plugin));
+                                                json = "ok:pluginenabled:_NAME_," + plugin;
+                                            } else {
+                                                json = "error:badparameters";
+                                            }
+                                            print(json, "text/plain");
                                         }
-                                        print(json, "text/plain");
 
                                     } else if (url.startsWith("/server/reload_plugin")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
@@ -1383,61 +1389,76 @@ public class WebServer extends Thread implements RTKListener {
                                     //PLAYER AREA
                                     ////////////////
                                     else if (url.startsWith("/player/kick")) {
-                                        final String user = getParam("user", param);
-                                        final String cause = getParam("cause", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String cause = getParam("cause", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.kickPlayer(webServer, user, cause, KickedString);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.kickPlayer(webServer, user, cause, KickedString);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/give_item")) {
-                                        final String user = getParam("user", param);
-                                        final String item = getParam("item", param);
-                                        final String amount = getParam("amount", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String item = getParam("item", param);
+                                            final String amount = getParam("amount", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.givePlayerItem(webServer, user, amount, item);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.givePlayerItem(webServer, user, amount, item);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/remove_item")) {
-                                        final String user = getParam("user", param);
-                                        final String item = getParam("item", param);
-                                        final String amount = getParam("amount", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String item = getParam("item", param);
+                                            final String amount = getParam("amount", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.removePlayerItem(webServer, user, amount, item);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.removePlayerItem(webServer, user, amount, item);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/get_health")) {
-                                        final String user = getParam("user", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.getPlayerHealth(webServer, user);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.getPlayerHealth(webServer, user);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/set_health")) {
-                                        final String user = getParam("user", param);
-                                        final String amount = getParam("amount", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String amount = getParam("amount", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.setPlayerHealth(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.setPlayerHealth(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/ban_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1539,99 +1560,123 @@ public class WebServer extends Thread implements RTKListener {
                                             }).start();
                                         }
                                     } else if (url.startsWith("/player/shoot_arrow")) {
-                                        final String user = getParam("user", param);
-                                        final int amount = Integer.parseInt(getParam("amount", param));
-                                        final WebServer webServer = this;
-                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final int amount = Integer.parseInt(getParam("amount", param));
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.shootArrow(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.shootArrow(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/shoot_fireball")) {
-                                        final String user = getParam("user", param);
-                                        final int amount = Integer.parseInt(getParam("amount", param));
-                                        final WebServer webServer = this;
-                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final int amount = Integer.parseInt(getParam("amount", param));
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.shootFireball(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.shootFireball(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/throw_snowball")) {
-                                        final String user = getParam("user", param);
-                                        final int amount = Integer.parseInt(getParam("amount", param));
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final int amount = Integer.parseInt(getParam("amount", param));
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.throwSnowball(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.throwSnowball(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/throw_egg")) {
-                                        final String user = getParam("user", param);
-                                        final int amount = Integer.parseInt(getParam("amount", param));
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final int amount = Integer.parseInt(getParam("amount", param));
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.throwEgg(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.throwEgg(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/throw_bomb")) {
-                                        final String user = getParam("user", param);
-                                        final int amount = Integer.parseInt(getParam("amount", param));
-                                        final WebServer webServer = this;
-                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final int amount = Integer.parseInt(getParam("amount", param));
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.throwBomb(webServer, user, amount);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.throwBomb(webServer, user, amount);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/change_display_name")) {
-                                        final String user = getParam("user", param);
-                                        final String name = getParam("name", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String name = getParam("name", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.changeDisplayName(webServer, user, name);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.changeDisplayName(webServer, user, name);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/teleport_to_player")) {
-                                        final String user = getParam("user", param);
-                                        final String touser = getParam("to_user", param);
-                                        final WebServer webServer = this;
-                                        final MilkAdmin myMilkAdminInstance = milkAdminInstance;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String touser = getParam("to_user", param);
+                                            final WebServer webServer = this;
+                                            final MilkAdmin myMilkAdminInstance = milkAdminInstance;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.teleportToPlayer(webServer, myMilkAdminInstance, user, touser);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.teleportToPlayer(webServer, myMilkAdminInstance, user, touser);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/teleport_to_location")) {
-                                        final String user = getParam("user", param);
-                                        final String x = getParam("x", param);
-                                        final String y = getParam("y", param);
-                                        final String z = getParam("z", param);
-                                        final WebServer webServer = this;
-                                        new MilkAdminThread(new Runnable() {
+                                        String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                                        if (!my.endsWith("NL")) {
+                                            final String user = getParam("user", param);
+                                            final String x = getParam("x", param);
+                                            final String y = getParam("y", param);
+                                            final String z = getParam("z", param);
+                                            final WebServer webServer = this;
+                                            new MilkAdminThread(new Runnable() {
 
-                                            @Override
-                                            public void run() {
-                                                MilkAdminWebServer.teleportToLocation(webServer, user, x, y, z);
-                                            }
-                                        }).start();
+                                                @Override
+                                                public void run() {
+                                                    MilkAdminWebServer.teleportToLocation(webServer, user, x, y, z);
+                                                }
+                                            }).start();
+                                        }
                                     } else if (url.startsWith("/player/is_online")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
