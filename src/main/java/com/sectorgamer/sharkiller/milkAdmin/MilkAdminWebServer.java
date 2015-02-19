@@ -6,6 +6,7 @@ package com.sectorgamer.sharkiller.milkAdmin;
 
 import com.sectorgamer.sharkiller.milkAdmin.util.MilkAdminLog;
 import de.demonbindestrichcraft.lib.bukkit.wbukkitlib.player.WPlayerInterface;
+import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.session.ThreadSafeSession;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -496,5 +497,20 @@ public class MilkAdminWebServer {
             json = "{\"status\":\"error\", \"error\":\"badparameters\"}";
         }
         webServer.print(json, "application/json");
+    }
+
+    public static void logAccount(final WebServer webServer, final MilkAdmin i, final String HostAddress,final String url) {
+        new MilkAdminThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (webServer == null || i == null || HostAddress == null || HostAddress.isEmpty()||url==null||url.isEmpty()) {
+                    return;
+                }
+                String account="";
+                account = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
+                i.logAccount(account, url);
+            }
+        }).start();
     }
 }

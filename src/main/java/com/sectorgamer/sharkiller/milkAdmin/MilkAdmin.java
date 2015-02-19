@@ -27,11 +27,13 @@ import com.sectorgamer.sharkiller.milkAdmin.rtk.*;
 import com.sectorgamer.sharkiller.milkAdmin.util.*;
 
 import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.files.*;
+import de.demonbindestrichcraft.werri.lib.bukkit.wbukkitlib.common.session.ThreadSafeSession;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import sun.nio.cs.ext.MacCentralEurope;
@@ -71,7 +73,13 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
     private WhitelistCommandExecuter w;
     PluginManager pm;
     public boolean MCWhitelist;
-    private static Plugin milkAdmin=null;
+    private static Plugin milkAdmin = null;
+    private Config logAccounts = null;
+    private String logAccountsDir;
+    private String logAccountsFileS;
+    private File logAccountsFile;
+    private Map<String, String> logAccountsMap;
+    private boolean logAccountsB;
 
     public boolean setup() {
         try {
@@ -127,11 +135,10 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             UsingRTK = Settings.getBoolean("RTK.UsingRTK");
             WLCustom = Settings.getBoolean("Whitelist.Custom", false);
             boolean MCWhitelist = ServerProperties.getBoolean("white-list", false);
-            if(WLCustom||MCWhitelist)
-            {
-                this.MCWhitelist=true;
+            if (WLCustom || MCWhitelist) {
+                this.MCWhitelist = true;
             } else {
-                this.MCWhitelist=false;
+                this.MCWhitelist = false;
             }
             OnlineMode = ServerProperties.getBoolean("online-mode", true);
 
@@ -191,6 +198,96 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             m = new milkAdminUpdateThread(this);
         }
         return true;
+    }
+
+    public synchronized void enableLogAccounts() {
+        logAccountsDir = PluginDir;
+        logAccountsFileS = logAccountsDir + File.separator + "logaccounts.txt";
+        logAccountsFile = new File(logAccountsFileS);
+        logAccountsMap = new ConcurrentHashMap<String, String>();
+        if (!logAccountsFile.exists()) {
+            logAccountsMap.put("_WERRI_logAccounts", "false");
+            logAccounts = new Config(logAccountsFile);
+            logAccounts.update(logAccountsMap);
+            logAccounts.save("=");
+        } else {
+            logAccounts = new Config(logAccountsFile);
+            logAccounts.load("=");
+            Map<String, String> copyOfProperties = logAccounts.getCopyOfProperties();
+            logAccountsMap.putAll(copyOfProperties);
+        }
+
+        if (logAccountsMap.containsKey("_WERRI_logAccounts")) {
+            try {
+                logAccountsB = logAccounts.getBoolean("_WERRI_logAccounts");
+            } catch (Throwable ex) {
+                logAccountsB = false;
+                logAccountsMap.put("_WERRI_logAccounts", "false");
+                logAccounts.update(logAccountsMap);
+                logAccounts.save("=");
+            }
+        } else {
+            logAccountsB = false;
+            logAccountsMap.put("_WERRI_logAccounts", "false");
+            logAccounts.update(logAccountsMap);
+            logAccounts.save("=");
+        }
+    }
+
+    public void logAccount(String log) {
+        MilkAdminLog.info(log);
+    }
+
+    public void logAccount(String account, String url) {
+        if (!isLocAccount(account)) {
+            return;
+        }
+        String ipByUsername = ThreadSafeSession.getSingleton().getIpByUsername(account);
+        String log = "[milkAdmin][LogAccount] User: " + account + " Ip: " + ipByUsername + " Url: " + url;
+        logAccount(log);
+    }
+
+    public synchronized boolean addLocAccount(String account) {
+        if (!logAccountsB) {
+            return false;
+        }
+        if (!isLocAccount(account)) {
+            logAccountsMap.put(account, "true");
+            logAccounts.update(logAccountsMap);
+            logAccounts.save("=");
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean removeLocAccount(String account) {
+        if (!logAccountsB) {
+            return false;
+        }
+        if (isLocAccount(account)) {
+            logAccountsMap.put(account, "false");
+            logAccounts.update(logAccountsMap);
+            logAccounts.save("=");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isLocAccount(String account) {
+        if (!logAccountsB) {
+            return false;
+        }
+        if (!logAccountsMap.containsKey(account)) {
+            return false;
+        }
+        try
+        {
+            String get = logAccountsMap.get(account);
+            boolean parseBoolean = Boolean.parseBoolean(get);
+            return parseBoolean;
+        } catch (Throwable ex) {
+            return false;
+        }
     }
 
     public void enablePermissions() {
@@ -262,7 +359,7 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
 
     @Override
     public void onEnable() {
-        pm=Bukkit.getPluginManager();
+        pm = Bukkit.getPluginManager();
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         initTime = sdf.format(cal.getTime());
@@ -274,7 +371,7 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             pm.registerEvents(new BanlistListener(this), this);
             if (WLCustom) {
                 pm.registerEvents(new WhitelistListener(this), this);
-                w=new WhitelistCommandExecuter(this);
+                w = new WhitelistCommandExecuter(this);
                 getCommand("whitelist").setExecutor(w);
             }
             //regenerateBackupLoggedIn();
@@ -289,7 +386,8 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
         } else {
             MilkAdminLog.severe("Failed to initialized!");
         }
-        milkAdmin=this;
+        milkAdmin = this;
+        enableLogAccounts();
     }
 
     @Override
@@ -308,14 +406,30 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if(cmd==null)
+        if (cmd == null) {
             return true;
+        }
+        if ((sender instanceof Player)) {
+            return true;
+        }
         String commandName = cmd.getName();
 
         if (commandName.equalsIgnoreCase("milkadmin")) {
             try {
-                if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
-                    sender.sendMessage("=D");
+                if (args == null || args.length == 0 || args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("?")) {
+                    sender.sendMessage("/milkadmin whitelist add <player>");
+                    sender.sendMessage("/milkadmin whitelist remove <player>");
+                    sender.sendMessage("/milkadmin ban <player>");
+                    sender.sendMessage("/milkadmin updatebanlist");
+                    sender.sendMessage("/milkadmin updatewhitelist");
+                    sender.sendMessage("/milkadmin remoeveallwhitelist");
+                    sender.sendMessage("/milkadmin addallwhitelist");
+                    sender.sendMessage("/milkadmin removeallbanlist");
+                    sender.sendMessage("/milkadmin addlocaccount <account> (add log account)");
+                    sender.sendMessage("/milkadmin removelocaccount <account> (remove log account)");
+                    sender.sendMessage("/milkadmin islocaccount <account> (get true or false)");
+                    sender.sendMessage("/milkadmin logplayers <set> (set is either true or false)");
+                    sender.sendMessage("/milkadmin logplayers (get the set value true or false)");
                 } else if (args[0].equalsIgnoreCase("whitelist") || args[0].equalsIgnoreCase("wl")) {
                     whitelistProccess(sender, args);
                 } else if (args[0].equalsIgnoreCase("ban") || args[0].equalsIgnoreCase("b")) {
@@ -348,6 +462,57 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
                 } else if (args[0].equalsIgnoreCase("removeallbanlist")) {
                     this.BL.removeAllPlayersFromBanList();
                     sender.sendMessage("All players removed from the banlist!");
+                } else if (args[0].equalsIgnoreCase("addlocaccount")) {
+                    if (args.length != 2) {
+                        sender.sendMessage("/milkadmin addlocaccount <account>");
+                        return true;
+                    }
+                    boolean addLocAccount = addLocAccount(args[1]);
+                    if (addLocAccount) {
+                        sender.sendMessage("Account is added to the log accounts list!");
+                    } else {
+                        sender.sendMessage("Account can not removed from the log accounts list!");
+                    }
+                } else if (args[0].equalsIgnoreCase("removelocaccount")) {
+                    if (args.length != 2) {
+                        sender.sendMessage("/milkadmin removelocaccount <account>");
+                        return true;
+                    }
+                    boolean removeLocAccount = removeLocAccount(args[1]);
+                    if (removeLocAccount) {
+                        sender.sendMessage("Account is removed gtom the log accounts list!");
+                    } else {
+                        sender.sendMessage("Account can not removed from the log accounts list!");
+                    }
+                } else if (args[0].equalsIgnoreCase("islocaccount")) {
+                    if (args.length != 2) {
+                        sender.sendMessage("/milkadmin islocaccount <account>");
+                        return true;
+                    }
+                    boolean isLocAccount = isLocAccount(args[1]);
+                    if (isLocAccount) {
+                        sender.sendMessage("Account: " + args[1] + " is in the account list!!");
+                    } else {
+                        sender.sendMessage("Account: " + args[1] + " is not in the account list!!");
+                    }
+                } else if (args[0].equalsIgnoreCase("logplayers")) {
+                    if (args.length == 1) {
+                        sender.sendMessage("" + logAccountsB);
+                        return true;
+                    }
+                    if (args[1].equalsIgnoreCase("true")) {
+                        logAccountsB = true;
+                        logAccountsMap.put("_WERRI_logAccounts", "true");
+                        logAccounts.update(logAccountsMap);
+                        logAccounts.save("=");
+                        sender.sendMessage("_WERRI_logAccounts is setted to true!");
+                    } else {
+                        logAccountsB = false;
+                        logAccountsMap.put("_WERRI_logAccounts", "false");
+                        logAccounts.update(logAccountsMap);
+                        logAccounts.save("=");
+                        sender.sendMessage("_WERRI_logAccounts is setted to false!");
+                    }
                 }
                 return true;
             } catch (ArrayIndexOutOfBoundsException ex) {
@@ -404,21 +569,19 @@ public class MilkAdmin extends JavaPlugin implements RTKListener {
             sender.sendMessage(ChatColor.RED + "You do not have access to this command.");
         }
     }
-    
-    public static Plugin getMilkAdminInstance()
-    {
-        if(milkAdmin==null)
-        {
+
+    public static Plugin getMilkAdminInstance() {
+        if (milkAdmin == null) {
             Plugin[] plugins = Bukkit.getServer().getPluginManager().getPlugins();
-            if(plugins==null||plugins.length==0)
+            if (plugins == null || plugins.length == 0) {
                 return null;
-            for(Plugin plugin:plugins)
-            {
-                if(plugin==null)
+            }
+            for (Plugin plugin : plugins) {
+                if (plugin == null) {
                     continue;
-                if(plugin.getName().equalsIgnoreCase("milkAdmin"))
-                {
-                    milkAdmin=plugin;
+                }
+                if (plugin.getName().equalsIgnoreCase("milkAdmin")) {
+                    milkAdmin = plugin;
                     return plugin;
                 }
             }

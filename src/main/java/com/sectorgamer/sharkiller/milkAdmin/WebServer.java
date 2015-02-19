@@ -965,17 +965,18 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/server/logout")) {
                                         //LoggedIn.removeKey(HostAddress);
                                         ThreadSafeSession.getSingleton().removeUserByIp(HostAddress);
                                         json = "ok";
                                         print(json, "text/plain");
-                                        ThreadSafeSession.getSingleton().writeSessionHostaddressUsernameToFile(loggedinFile, splitchar);
+                                        ThreadSafeSession.getSingleton().writeSessionHostaddressUsernameToFile(loggedinFile, splitchar);  
                                     } else if (url.equals("/save")) {
                                         consoleCommand("save-all");
                                         json = "ok:worldsaved";
                                         print(json, "text/plain");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/say")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -993,7 +994,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/broadcast_message")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1006,7 +1007,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/stop")) {
                                         json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
                                         json += "<head><script type=\"text/javascript\">tourl = './';</script>" + readFileAsString(htmlDir + "/wait.html");
@@ -1018,13 +1019,13 @@ public class WebServer extends Thread implements RTKListener {
                                             debug("ERROR in Stop: " + e.getMessage());
                                         }
                                         milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/reload_server")) {
                                         milkAdminInstance.getServer().reload();
                                         json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
                                         json += "<head><script type=\"text/javascript\">tourl = './';</script>" + readFileAsString(htmlDir + "/wait.html");
                                         print(json, "text/html");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/restart_server")) {
                                         try {
                                             milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.RESTART, null);
@@ -1034,12 +1035,12 @@ public class WebServer extends Thread implements RTKListener {
                                         json = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">";
                                         json += "<head><script type=\"text/javascript\">tourl = './';</script>" + readFileAsString(htmlDir + "/wait.html");
                                         print(json, "text/html");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/force_stop")) {
                                         json = "ok:forcestop";
                                         print(json, "text/plain");
                                         System.exit(1);
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/server/get_plugins.json")) {
                                         Plugin[] p = milkAdminInstance.getServer().getPluginManager().getPlugins();
                                         json = "[";
@@ -1053,7 +1054,7 @@ public class WebServer extends Thread implements RTKListener {
                                         }
                                         json = json + "]";
                                         print(json, "application/json");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/plugin_latest.json")) {
                                         String plugin = getParam("plugin", param);
                                         if (plugin.length() > 0) {
@@ -1063,7 +1064,7 @@ public class WebServer extends Thread implements RTKListener {
                                         }
                                         // TODO: Change to "application/json"
                                         print(json, "text/plain");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/disable_plugin")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1080,7 +1081,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/enable_plugin")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1093,7 +1094,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/reload_plugin")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1111,7 +1112,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/load_plugin")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1148,10 +1149,10 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/server/console")) {
                                         print(readConsole(), "text/plain");
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/server/properties_edit")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1186,7 +1187,7 @@ public class WebServer extends Thread implements RTKListener {
 
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/page/change_lang")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1206,7 +1207,7 @@ public class WebServer extends Thread implements RTKListener {
 
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/backup")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1233,6 +1234,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/restore")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1254,6 +1256,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             milkAdminInstance.RTKapi.executeCommand(RTKInterface.CommandType.HOLD_SERVER, null);
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/delete")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1266,7 +1269,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/info/list_backups.json")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1292,11 +1295,13 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(listbu, "application/json");
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } /////////////
                                     //INFO AREA
                                     /////////////
                                     else if (url.equals("/info/data.json")) {
                                         print(infoData(), "application/json");
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
 
                                     } /////////////////////////
                                     //CUSTOM WHITELIST AREA
@@ -1322,7 +1327,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/customwl/remove.php")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1334,7 +1339,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } //////////////////
                                     //WHITELIST AREA
                                     //////////////////
@@ -1352,6 +1357,7 @@ public class WebServer extends Thread implements RTKListener {
                                             wl += "]";
                                             print(wl, "application/json");
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/whitelist/add")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1365,7 +1371,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/whitelist/save")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1384,7 +1390,7 @@ public class WebServer extends Thread implements RTKListener {
                                             }
                                             print(json, "text/plain");
                                         }
-
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } ////////////////
                                     //PLAYER AREA
                                     ////////////////
@@ -1402,6 +1408,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/give_item")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1417,6 +1424,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/remove_item")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1432,6 +1440,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/get_health")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1445,6 +1454,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/set_health")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1459,6 +1469,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/ban_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1474,6 +1485,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/ban_uuid")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1489,6 +1501,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/ban_ip")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1504,6 +1517,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/unban_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1518,6 +1532,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/unban_uuid")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1532,6 +1547,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/unban_ip")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1546,6 +1562,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/player/banlist.json")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1559,6 +1576,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/shoot_arrow")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1574,6 +1592,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/shoot_fireball")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1589,6 +1608,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/throw_snowball")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1603,6 +1623,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/throw_egg")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1617,6 +1638,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/throw_bomb")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1632,6 +1654,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/change_display_name")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1646,6 +1669,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/teleport_to_player")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1661,6 +1685,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/teleport_to_location")) {
                                         String my = ThreadSafeSession.getSingleton().getUsernameByIp(HostAddress);
                                         if (!my.endsWith("NL")) {
@@ -1677,6 +1702,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 }
                                             }).start();
                                         }
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/is_online")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
@@ -1687,6 +1713,7 @@ public class WebServer extends Thread implements RTKListener {
                                                 MilkAdminWebServer.playerIsOnline(webServer, user);
                                             }
                                         }).start();
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.startsWith("/player/get_ip_port.json")) {
                                         final String user = getParam("user", param);
                                         final WebServer webServer = this;
@@ -1697,9 +1724,9 @@ public class WebServer extends Thread implements RTKListener {
                                                 MilkAdminWebServer.getIpPort(webServer, user);
                                             }
                                         }).start();
+                                        MilkAdminWebServer.logAccount(this, milkAdminInstance, HostAddress, url);
                                     } else if (url.equals("/") || url.equals("/index.html")) {
                                         readFileAsBinary(htmlDir + "/index.html", "text/html", true);
-
                                     } else if (url.startsWith("/js/lang/")) {
                                         readFileAsBinary(htmlDir + url, "text/javascript");
 
